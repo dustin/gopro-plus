@@ -18,48 +18,12 @@ import qualified Data.Map.Strict        as Map
 import           Data.Time.Clock        (UTCTime)
 import qualified Data.Vector            as V
 import           Generics.Deriving.Base (Generic)
-import           Network.Wreq           (FormParam (..), asJSON, deleteWith,
-                                         putWith, responseBody)
+import           Network.Wreq           (asJSON, deleteWith, putWith,
+                                         responseBody)
 import           System.Random          (getStdRandom, randomR)
 
 
 import           GoPro.HTTP
-
-apiClientID, apiClientSecret :: String
-apiClientID = "71611e67ea968cfacf45e2b6936c81156fcf5dbe553a2bf2d342da1562d05f46"
-apiClientSecret = "3863c9b438c07b82f39ab3eeeef9c24fefa50c6856253e3f1d37e0e3b1ead68d"
-
-authURL :: String
-authURL = "https://api.gopro.com/v1/oauth2/token"
-
--- | An Authentication response.
-data AuthResponse = AuthResponse {
-  _access_token    :: String
-  , _expires_in    :: Int
-  , _refresh_token :: String
-  } deriving(Generic, Show)
-
-instance FromJSON AuthResponse where
-  parseJSON = genericParseJSON jsonOpts
-
-makeLenses ''AuthResponse
-
-authenticate :: MonadIO m => Token -> String -> m AuthResponse
-authenticate username password =
-  jpostWith defOpts authURL ["grant_type" := ("password" :: String),
-                             "client_id" := apiClientID,
-                             "client_secret" := apiClientSecret,
-                             "scope" := ("root root:channels public me upload media_library_beta live" :: String),
-                             "username" := username,
-                             "password" := password]
-
--- | Refresh authentication credentials using a refresh token.
-refreshAuth :: MonadIO m => AuthResponse -> m AuthResponse
-refreshAuth AuthResponse{..} =
-  jpostWith defOpts authURL ["grant_type" := ("refresh_token" :: String),
-                             "client_id" := apiClientID,
-                             "client_secret" := apiClientSecret,
-                             "refresh_token" := _refresh_token]
 
 data PageInfo = PageInfo {
   _current_page :: Int,
