@@ -42,6 +42,7 @@ authOpts tok = defOpts & header "Authorization" .~ ["Bearer " <> BC.pack tok]
                & header "Accept" .~ ["application/vnd.gopro.jk.media+json; version=2.0.0"]
                & header "Content-Type" .~ ["application/json"]
 
+type Token = String
 
 jsonOpts :: Data.Aeson.Options
 jsonOpts = defaultOptions {
@@ -60,7 +61,7 @@ instance FromJSON AuthResponse where
 
 makeLenses ''AuthResponse
 
-authenticate :: MonadIO m => String -> String -> m AuthResponse
+authenticate :: MonadIO m => Token -> String -> m AuthResponse
 authenticate username password = do
   r <- liftIO (asJSON =<< postWith defOpts authURL ["grant_type" := ("password" :: String),
                                                     "client_id" := apiClientID,
@@ -132,13 +133,13 @@ thumbnailURL :: Int -> Media -> String
 thumbnailURL n Media{_media_token} = "https://images-0" <> show n <> ".gopro.com/resize/450wwp/" <> _media_token
 
 -- | Proxy a request to GoPro with authentication.
-proxy :: MonadIO m => String -> String -> m BL.ByteString
+proxy :: MonadIO m => Token -> String -> m BL.ByteString
 proxy tok u = do
   r <- liftIO $ getWith (authOpts tok) u
   pure $ r ^. responseBody
 
 -- | Fetch thumbnail data for the given media.
-fetchThumbnail :: MonadIO m => String -> Media -> m BL.ByteString
+fetchThumbnail :: MonadIO m => Token -> Media -> m BL.ByteString
 fetchThumbnail tok m = do
   n <- liftIO $ getStdRandom (randomR (1,4))
   proxy tok (thumbnailURL n m)
@@ -159,22 +160,22 @@ instance FromJSON Listing where
   parseJSON invalid    = typeMismatch "Response" invalid
 
 
-jget :: (MonadIO m, FromJSON a) => String -> String -> m a
+jget :: (MonadIO m, FromJSON a) => Token -> String -> m a
 jget tok u = view responseBody <$> liftIO (getWith (authOpts tok) u >>= asJSON)
 
 -- | List a page worth of media.
-list :: MonadIO m => String -> Int -> Int -> m ([Media], PageInfo)
+list :: MonadIO m => Token -> Int -> Int -> m ([Media], PageInfo)
 list tok psize page = do
   r <- jget tok ("https://api.gopro.com/media/search?fields=captured_at,created_at,file_size,id,moments_count,ready_to_view,source_duration,type,token,width,height,camera_model&order_by=created_at&per_page=" <> show psize <> "&page=" <> show page)
   pure $ (r ^.. media . folded,
           r ^. pages)
 
 -- | List all media.
-listAll :: MonadIO m => String -> m [Media]
+listAll :: MonadIO m => Token -> m [Media]
 listAll tok = listWhile tok (const True)
 
 -- | List all media while returned batches pass the given predicate.
-listWhile :: MonadIO m => String -> ([Media] -> Bool) -> m [Media]
+listWhile :: MonadIO m => Token -> ([Media] -> Bool) -> m [Media]
 listWhile tok f = do
   Map.elems <$> dig 0 mempty
     where
@@ -275,7 +276,7 @@ dlURL :: String -> String
 dlURL k = "https://api.gopro.com/media/" <> k <> "/download"
 
 -- | Retrieve stuff describing a file.
-retrieve :: MonadIO m => String -> String -> m FileInfo
+retrieve :: MonadIO m => Token -> String -> m FileInfo
 retrieve tok k = jget tok (dlURL k)
 
 data Error = Error {
@@ -302,7 +303,7 @@ instance FromJSON Errors where
   parseJSON invalid    = typeMismatch "Response" invalid
 
 -- | Delete an item.
-delete :: MonadIO m => String -> String -> m [Error]
+delete :: MonadIO m => Token -> String -> m [Error]
 delete tok k = do
   let u = "https://api.gopro.com/media?ids=" <> k
   Errors r <- view responseBody <$> liftIO (deleteWith (authOpts tok) u >>= asJSON)
@@ -311,8 +312,8 @@ delete tok k = do
 mediumURL :: String -> String
 mediumURL = ("https://api.gopro.com/media/" <>)
 
-rawMedium :: MonadIO m => String -> String -> m Value
+rawMedium :: MonadIO m => Token -> String -> m Value
 rawMedium tok mid = jget tok (mediumURL mid)
 
-putRawMedium :: MonadIO m => String -> String -> Value -> m Value
+putRawMedium :: MonadIO m => Token -> String -> Value -> m Value
 putRawMedium tok mid v = view responseBody <$> liftIO (putWith (authOpts tok) (mediumURL mid) v >>= asJSON)
