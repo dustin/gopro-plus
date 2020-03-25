@@ -23,6 +23,8 @@ dependencies:
 - base >= 4.7 && < 5
 - random
 - aeson
+- lens-aeson
+- text
 - unordered-containers
 - containers
 - wreq
@@ -31,6 +33,7 @@ dependencies:
 - time
 - generic-deriving
 - vector
+- filepath
 
 library:
   source-dirs: src
