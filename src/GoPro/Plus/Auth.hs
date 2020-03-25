@@ -33,7 +33,7 @@ instance FromJSON AuthResponse where
 
 makeLenses ''AuthResponse
 
-authenticate :: MonadIO m => Token -> String -> m AuthResponse
+authenticate :: MonadIO m => String -> String -> m AuthResponse
 authenticate username password =
   jpostWith defOpts authURL ["grant_type" := ("password" :: String),
                              "client_id" := apiClientID,
