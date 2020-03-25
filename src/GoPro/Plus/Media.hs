@@ -3,7 +3,7 @@
 {-# LANGUAGE RecordWildCards   #-}
 {-# LANGUAGE TemplateHaskell   #-}
 
-module GoPro.Plus where
+module GoPro.Plus.Media where
 
 import           Control.Lens
 import           Control.Monad.IO.Class (MonadIO (..))
@@ -36,12 +36,6 @@ makeLenses ''PageInfo
 
 instance FromJSON PageInfo where
   parseJSON = genericParseJSON jsonOpts
-
-{-
-failure
-transcoding
-uploading
--}
 
 data Media = Media {
   _media_id              :: String,
