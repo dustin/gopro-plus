@@ -11,8 +11,7 @@ import           Data.Char              (toUpper)
 import qualified Data.Text              as T
 import           Data.Time.Clock.POSIX  (getCurrentTime)
 import qualified Data.Vector            as V
-import           Network.Wreq           (asJSON, header, params, postWith,
-                                         putWith, responseBody)
+import           Network.Wreq           (header, params, putWith)
 import           System.FilePath.Posix  (takeExtension, takeFileName)
 import           System.IO              (Handle, IOMode (..), SeekMode (..),
                                          hSeek, hTell, withFile)
@@ -35,7 +34,7 @@ uploadFile tok uid fp = liftIO $ withFile fp ReadMode $ \fh -> do
                      & at "content_source" ?~ J.String "web_media_library"
                      & at "access_token" ?~ J.String (T.pack tok)
                      & at "gopro_user_id" ?~ J.String (T.pack uid))
-  cr <- jpostWith "https://api.gopro.com/media" m1
+  cr <- jpost "https://api.gopro.com/media" m1
 
   let Just mid = cr ^? key "id" . _String
       d1 = J.Object (mempty & at "medium_id" ?~ J.String mid
@@ -48,7 +47,7 @@ uploadFile tok uid fp = liftIO $ withFile fp ReadMode $ \fh -> do
                      & at "on_public_profile" ?~ J.Bool False
                      & at "access_token" ?~ J.String (T.pack tok)
                      & at "gopro_user_id" ?~ J.String (T.pack uid))
-  dr <- jpostWith "https://api.gopro.com/derivatives" d1
+  dr <- jpost "https://api.gopro.com/derivatives" d1
 
   let Just did = dr ^? key "id" . _String
       u1 = J.Object (mempty & at "derivative_id" ?~ J.String did
@@ -56,7 +55,7 @@ uploadFile tok uid fp = liftIO $ withFile fp ReadMode $ \fh -> do
                      & at "item_number" ?~ J.Number 1
                      & at "access_token" ?~ J.String (T.pack tok)
                      & at "gopro_user_id" ?~ J.String (T.pack uid))
-  ur <- jpostWith "https://api.gopro.com/user-uploads" u1
+  ur <- jpost "https://api.gopro.com/user-uploads" u1
 
   let Just upid = ur ^? key "id" . _String
       upopts = authOpts tok & params .~ [("id", upid),
@@ -103,12 +102,10 @@ uploadFile tok uid fp = liftIO $ withFile fp ReadMode $ \fh -> do
     fileType "JPG" = "Photo"
     fileType _     = "Video"
 
-    popts = authOpts tok & header "Origin" .~ ["https://plus.gopro.com/"]
-                         & header "Referer" .~ ["https://plus.gopro.com/media-library"]
-                         & header "Accept" .~  ["application/vnd.gopro.jk.user-uploads+json; version=2.0.0"]
+    popts = authOpts tok & header "Accept" .~  ["application/vnd.gopro.jk.user-uploads+json; version=2.0.0"]
 
-    jpostWith :: String -> J.Value -> IO J.Value
-    jpostWith u v = view responseBody <$> (asJSON =<< postWith popts u v)
+    jpost :: String -> J.Value -> IO J.Value
+    jpost = jpostWith popts
 
     tInt :: T.Text -> Integer
     tInt = read . T.unpack

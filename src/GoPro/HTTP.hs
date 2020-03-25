@@ -7,8 +7,8 @@ import           Data.Aeson             (FromJSON (..), Options (..),
 import qualified Data.ByteString.Char8  as BC
 import qualified Data.ByteString.Lazy   as BL
 import           Network.Wreq           (Options, asJSON, defaults, getWith,
-                                         header, responseBody)
-
+                                         header, postWith, responseBody)
+import           Network.Wreq.Types     (Postable)
 
 userAgent :: BC.ByteString
 userAgent = "github.com/dustin/gopro 0.1"
@@ -40,3 +40,6 @@ jget tok = jgetWith (authOpts tok)
 
 jgetWith :: (MonadIO m, FromJSON a) => Network.Wreq.Options -> String -> m a
 jgetWith opts u = view responseBody <$> liftIO (getWith opts u >>= asJSON)
+
+jpostWith :: (MonadIO m, Postable a, FromJSON r) => Network.Wreq.Options -> String -> a -> m r
+jpostWith opts u v = view responseBody <$> liftIO (postWith opts u v >>= asJSON)

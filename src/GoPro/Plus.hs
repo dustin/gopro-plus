@@ -18,9 +18,8 @@ import qualified Data.Map.Strict        as Map
 import           Data.Time.Clock        (UTCTime)
 import qualified Data.Vector            as V
 import           Generics.Deriving.Base (Generic)
-import           Network.Wreq           (FormParam (..), Options, asJSON,
-                                         defaults, deleteWith, getWith, header,
-                                         postWith, putWith, responseBody)
+import           Network.Wreq           (FormParam (..), asJSON, deleteWith,
+                                         putWith, responseBody)
 import           System.Random          (getStdRandom, randomR)
 
 
@@ -46,23 +45,21 @@ instance FromJSON AuthResponse where
 makeLenses ''AuthResponse
 
 authenticate :: MonadIO m => Token -> String -> m AuthResponse
-authenticate username password = do
-  r <- liftIO (asJSON =<< postWith defOpts authURL ["grant_type" := ("password" :: String),
-                                                    "client_id" := apiClientID,
-                                                    "client_secret" := apiClientSecret,
-                                                    "scope" := ("root root:channels public me upload media_library_beta live" :: String),
-                                                    "username" := username,
-                                                    "password" := password])
-  pure $ r ^. responseBody
+authenticate username password =
+  jpostWith defOpts authURL ["grant_type" := ("password" :: String),
+                             "client_id" := apiClientID,
+                             "client_secret" := apiClientSecret,
+                             "scope" := ("root root:channels public me upload media_library_beta live" :: String),
+                             "username" := username,
+                             "password" := password]
 
 -- | Refresh authentication credentials using a refresh token.
 refreshAuth :: MonadIO m => AuthResponse -> m AuthResponse
-refreshAuth AuthResponse{..} = do
-  r <- liftIO ( asJSON =<< postWith defOpts authURL ["grant_type" := ("refresh_token" :: String),
-                                                     "client_id" := apiClientID,
-                                                     "client_secret" := apiClientSecret,
-                                                     "refresh_token" := _refresh_token])
-  pure $ r ^. responseBody
+refreshAuth AuthResponse{..} =
+  jpostWith defOpts authURL ["grant_type" := ("refresh_token" :: String),
+                             "client_id" := apiClientID,
+                             "client_secret" := apiClientSecret,
+                             "refresh_token" := _refresh_token]
 
 data PageInfo = PageInfo {
   _current_page :: Int,
