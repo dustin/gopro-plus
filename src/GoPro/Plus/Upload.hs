@@ -118,5 +118,4 @@ uploadFile tok uid fp = liftIO $ withFile fp ReadMode $ \fh -> do
 
           offs = (p - 1) * chunkSize
       hSeek fh AbsoluteSeek offs
-      dat <- BL.hGet fh (fromIntegral l)
-      void $ putWith defOpts u dat
+      void $ putWith defOpts u =<< BL.hGet fh (fromIntegral l)
