@@ -5,10 +5,11 @@
 module GoPro.Plus.Upload (MediumID, UID, UploadID, DerivativeID,
                           UploadPart(..), uploadLength, uploadPart, uploadURL,
                           Upload(..), uploadID, uploadParts,
-                           uploadFile,
+                           uploadMedium,
                            createMedium, createDerivative, createUpload,
                            completeUpload, uploadChunk, markAvailable,
                            Uploader, runUpload, resumeUpload,
+                           setMediumType,
                            listUploading
                          ) where
 
@@ -17,8 +18,7 @@ import           Control.Lens
 import           Control.Monad          (void)
 import           Control.Monad.Fail     (MonadFail (..))
 import           Control.Monad.IO.Class (MonadIO (..))
-import           Control.Monad.State    (StateT (..), evalStateT, get, gets,
-                                         modify)
+import           Control.Monad.State    (StateT (..), evalStateT, get, modify)
 import qualified Data.Aeson             as J
 import           Data.Aeson.Lens
 import qualified Data.ByteString.Lazy   as BL
@@ -53,46 +53,53 @@ instance MonadUnliftIO m => MonadUnliftIO (StateT Env m) where
                               withRunInIO $ \run -> (,st) <$> inner (run . flip evalStateT st)
 
 data Env = Env {
-  token    :: Token,
-  userID   :: UID,
-  fileList :: [FilePath],
-  mediumID :: MediumID
+  token      :: Token,
+  userID     :: UID,
+  fileList   :: [FilePath],
+  mediumType :: T.Text,
+  extension  :: T.Text,
+  filename   :: String,
+  mediumID   :: MediumID
   }
 
+-- | List all media in uploading state.
 listUploading :: MonadIO m => Token -> m [Media]
 listUploading tok = do
   filter (\Media{..} -> _media_ready_to_view == "uploading") . fst <$> list tok 30 1
 
-runUpload :: MonadIO m => Token -> UID -> [FilePath] -> Uploader m a -> m a
+-- | Run an Uploader monad.
+runUpload :: (MonadFail m, MonadIO m) => Token -> UID -> [FilePath] -> Uploader m a -> m a
 runUpload token userID fileList a = resumeUpload token userID fileList "" a
 
-resumeUpload :: MonadIO m => Token -> UID -> [FilePath] -> MediumID -> Uploader m a -> m a
-resumeUpload token userID fileList mediumID a = evalStateT a Env{..}
+-- | Run an Uploader monad for which we already know the MediumID
+-- (i.e., we're resuming an upload we previously began).
+resumeUpload :: (MonadFail m, MonadIO m) => Token -> UID -> [FilePath] -> MediumID -> Uploader m a -> m a
+resumeUpload _ _ [] _ _ = fail "empty file list"
+resumeUpload token userID fileList@(fp:_) mediumID a = evalStateT a Env{..}
+  where
+    extension = T.pack . fmap toUpper . drop 1 . takeExtension $ filename
+    filename = takeFileName fp
+    mediumType = fileType extension
 
--- filename, file extension, file type
-fileInfo :: MonadIO m => Uploader m (String, String, String)
-fileInfo = do
-  fp <- head <$> gets fileList
-  pure (fn fp, ext fp, fileType (ext fp))
-    where ext fp = fmap toUpper . drop 1 . takeExtension $ fn fp
-          fn = takeFileName
+    fileType "JPG" = "Photo"
+    fileType _     = "Video"
 
-          fileType "JPG" = "Photo"
-          fileType _     = "Video"
-
+-- | Override the detected medium type.
+setMediumType :: Monad m => T.Text -> Uploader m ()
+setMediumType t = modify (\m -> m{mediumType=t})
 
 jpostVal :: MonadIO m => Options -> String -> J.Value -> m J.Value
 jpostVal opts u v = liftIO $ jpostWith opts u v
 
+-- | Create a new medium (e.g., video, photo, etc...).
 createMedium :: MonadIO m =>  Uploader m MediumID
 createMedium = do
   Env{..} <- get
-  (fn, ext, fileType) <- fileInfo
-  let m1 = J.Object (mempty & at "file_extension" ?~ J.String (T.pack ext)
-                     & at "filename" ?~ J.String (T.pack fn)
-                     & at "type" ?~ J.String (T.pack fileType)
+  let m1 = J.Object (mempty & at "file_extension" ?~ J.String extension
+                     & at "filename" ?~ J.String (T.pack filename)
+                     & at "type" ?~ J.String mediumType
                      & at "on_public_profile" ?~ J.Bool False
-                     & at "content_title" ?~ J.String (T.pack fn)
+                     & at "content_title" ?~ J.String (T.pack filename)
                      & at "content_source" ?~ J.String "web_media_library"
                      & at "access_token" ?~ J.String (T.pack token)
                      & at "gopro_user_id" ?~ J.String (T.pack userID))
@@ -100,12 +107,12 @@ createMedium = do
   modify (\s -> s{mediumID=m})
   pure m
 
+-- | Create a new derivative of the current medium containing the given number of parts.
 createDerivative :: MonadIO m => Int -> Uploader m DerivativeID
 createDerivative nparts = do
   Env{..} <- get
-  (_, ext, _) <- fileInfo
   let d1 = J.Object (mempty & at "medium_id" ?~ J.String mediumID
-                     & at "file_extension" ?~ J.String (T.pack ext)
+                     & at "file_extension" ?~ J.String extension
                      & at "type" ?~ J.String "Source"
                      & at "label" ?~ J.String "Source"
                      & at "available" ?~ J.Bool False
@@ -134,6 +141,7 @@ makeLenses ''Upload
 chunkSize :: Integer
 chunkSize = 6291456
 
+-- | Create a new upload for a derivative.
 createUpload :: MonadIO m => DerivativeID -> Int -> Int -> Uploader m Upload
 createUpload did part fsize = do
   Env{..} <- get
@@ -169,11 +177,13 @@ createUpload did part fsize = do
                                  (v ^? key "part" . _Integer . to toInteger)
                                  (v ^? key "url" . _String . to T.unpack)
 
+-- | Upload a chunk of of the given file as specified by this UploadPart.
 uploadChunk :: MonadIO m => FilePath -> UploadPart -> m ()
 uploadChunk fp UploadPart{..} = liftIO $ withFile fp ReadMode $ \fh -> do
   hSeek fh AbsoluteSeek ((_uploadPart - 1) * chunkSize)
   void $ putWith defOpts _uploadURL =<< BL.hGet fh (fromIntegral _uploadLength)
 
+-- | Mark the given upload for the given derivative as complete.
 completeUpload :: MonadIO m => UploadID -> DerivativeID -> Int -> Integer -> Uploader m ()
 completeUpload upid did part fsize = do
   Env{..} <- get
@@ -189,6 +199,8 @@ completeUpload upid did part fsize = do
   where
     popts tok = authOpts tok & header "Accept" .~  ["application/vnd.gopro.jk.user-uploads+json; version=2.0.0"]
 
+-- | Mark the given derivative as availble to use.  This also updates
+-- the medium record marking it as having completed its upload.
 markAvailable :: MonadIO m => DerivativeID -> Uploader m ()
 markAvailable did = do
   Env{..} <- get
@@ -210,9 +222,10 @@ markAvailable did = do
   where
     popts tok = authOpts tok & header "Accept" .~  ["application/vnd.gopro.jk.user-uploads+json; version=2.0.0"]
 
-uploadFile :: (MonadFail m, MonadIO m) => Token -> UID -> [FilePath] -> m MediumID
-uploadFile _ _ [] = fail "no files provided"
-uploadFile tok uid fps = runUpload tok uid fps $ do
+-- | Convenience function to upload a single medium.
+uploadMedium :: (MonadFail m, MonadIO m) => Token -> UID -> [FilePath] -> m MediumID
+uploadMedium _ _ [] = fail "no files provided"
+uploadMedium tok uid fps = runUpload tok uid fps $ do
   mid <- createMedium
   did <- createDerivative (length fps)
   mapM_ (\(fp,n) -> do
