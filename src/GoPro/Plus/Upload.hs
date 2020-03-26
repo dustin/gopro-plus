@@ -5,12 +5,13 @@ module GoPro.Plus.Upload (MediumID, UID, UploadID, DerivativeID,
                           Upload(..), uploadID, uploadParts,
                            uploadFile,
                            createMedium, createDerivative, createUpload,
-                           completeUpload, uploadChunk
+                           completeUpload, uploadChunk, markAvailable
                          ) where
 
 import           Control.Applicative    (liftA3)
 import           Control.Lens
 import           Control.Monad          (void)
+import           Control.Monad.Fail     (MonadFail (..))
 import           Control.Monad.IO.Class (MonadIO (..))
 import qualified Data.Aeson             as J
 import           Data.Aeson.Lens
@@ -21,6 +22,7 @@ import qualified Data.Text              as T
 import           Data.Time.Clock.POSIX  (getCurrentTime)
 import qualified Data.Vector            as V
 import           Network.Wreq           (Options, header, params, putWith)
+import           Prelude                hiding (fail)
 import           System.FilePath.Posix  (takeExtension, takeFileName)
 import           System.IO              (IOMode (..), SeekMode (..), hSeek,
                                          withFile)
@@ -59,15 +61,15 @@ createMedium tok uid fp = do
                      & at "gopro_user_id" ?~ J.String (T.pack uid))
   fromJust . preview (key "id" . _String) <$> jpostVal (authOpts tok) "https://api.gopro.com/media" m1
 
-createDerivative :: MonadIO m => Token -> UID -> MediumID -> FilePath -> m DerivativeID
-createDerivative tok uid mid fp = do
+createDerivative :: MonadIO m => Token -> UID -> MediumID -> Int -> FilePath -> m DerivativeID
+createDerivative tok uid mid nparts fp = do
   let (_, ext, _) = fileInfo fp
       d1 = J.Object (mempty & at "medium_id" ?~ J.String mid
                      & at "file_extension" ?~ J.String (T.pack ext)
                      & at "type" ?~ J.String "Source"
                      & at "label" ?~ J.String "Source"
                      & at "available" ?~ J.Bool False
-                     & at "item_count" ?~ J.Number 1
+                     & at "item_count" ?~ J.Number (fromIntegral nparts)
                      & at "camera_positions" ?~ J.String "default"
                      & at "on_public_profile" ?~ J.Bool False
                      & at "access_token" ?~ J.String (T.pack tok)
@@ -92,11 +94,11 @@ makeLenses ''Upload
 chunkSize :: Integer
 chunkSize = 6291456
 
-createUpload :: MonadIO m => Token -> UID -> DerivativeID -> Int -> m Upload
-createUpload tok uid did fsize = do
+createUpload :: MonadIO m => Token -> UID -> DerivativeID -> Int -> Int -> m Upload
+createUpload tok uid did part fsize = do
   let u1 = J.Object (mempty & at "derivative_id" ?~ J.String did
                      & at "camera_position" ?~ J.String "default"
-                     & at "item_number" ?~ J.Number 1
+                     & at "item_number" ?~ J.Number (fromIntegral part)
                      & at "access_token" ?~ J.String (T.pack tok)
                      & at "gopro_user_id" ?~ J.String (T.pack uid))
   ur <- jpost "https://api.gopro.com/user-uploads" u1
@@ -105,7 +107,7 @@ createUpload tok uid did fsize = do
       upopts = authOpts tok & params .~ [("id", upid),
                                          ("page", "1"),
                                          ("per_page", "100"),
-                                         ("item_number", "1"),
+                                         ("item_number", (T.pack . show) part),
                                          ("camera_position", "default"),
                                          ("file_size", (T.pack . show) fsize),
                                          ("part_size", (T.pack . show) chunkSize)]
@@ -131,18 +133,23 @@ uploadChunk fp UploadPart{..} = liftIO $ withFile fp ReadMode $ \fh -> do
   hSeek fh AbsoluteSeek ((_uploadPart - 1) * chunkSize)
   void $ putWith defOpts _uploadURL =<< BL.hGet fh (fromIntegral _uploadLength)
 
-completeUpload :: MonadIO m => Token -> UID -> UploadID -> DerivativeID -> Integer -> MediumID -> m ()
-completeUpload tok uid upid did fsize mid = do
+completeUpload :: MonadIO m => Token -> UploadID -> DerivativeID -> Int -> Integer -> m ()
+completeUpload tok upid did part fsize = do
 
   let u2 = J.Object (mempty & at "id" ?~ J.String upid
-                     & at "item_number" ?~ J.Number 1
+                     & at "item_number" ?~ J.Number (fromIntegral part)
                      & at "camera_position" ?~ J.String "default"
                      & at "complete" ?~ J.Bool True
                      & at "derivative_id" ?~ J.String did
                      & at "file_size" ?~ J.String ((T.pack . show) fsize)
                      & at "part_size" ?~ J.String ((T.pack . show) chunkSize))
-  _ <- liftIO $ putWith popts (T.unpack ("https://api.gopro.com/user-uploads/" <> did)) u2
+  void . liftIO $ putWith popts (T.unpack ("https://api.gopro.com/user-uploads/" <> did)) u2
 
+  where
+    popts = authOpts tok & header "Accept" .~  ["application/vnd.gopro.jk.user-uploads+json; version=2.0.0"]
+
+markAvailable :: MonadIO m => Token -> UID -> DerivativeID -> MediumID -> m ()
+markAvailable tok uid did mid = do
   let d2 = J.Object (mempty & at "available" ?~ J.Bool True
                      & at "access_token" ?~ J.String (T.pack tok)
                      & at "gopro_user_id" ?~ J.String (T.pack uid))
@@ -161,14 +168,19 @@ completeUpload tok uid upid did fsize mid = do
   where
     popts = authOpts tok & header "Accept" .~  ["application/vnd.gopro.jk.user-uploads+json; version=2.0.0"]
 
-uploadFile :: MonadIO m => Token -> UID -> FilePath -> m MediumID
-uploadFile tok uid fp = do
-  fsize <- toInteger . fileSize <$> (liftIO . getFileStatus) fp
+uploadFile :: (MonadFail m, MonadIO m) => Token -> UID -> [FilePath] -> m MediumID
+uploadFile tok uid fps@(f:_) = do
+  fsize <- toInteger . fileSize <$> (liftIO . getFileStatus) f
 
-  mid <- createMedium tok uid fp
-  did <- createDerivative tok uid mid fp
-  Upload{..} <- createUpload tok uid did (fromInteger fsize)
-  mapM_ (uploadChunk fp) _uploadParts
-  completeUpload tok uid _uploadID did fsize mid
+  mid <- createMedium tok uid f
+  did <- createDerivative tok uid mid (length fps) f
+  mapM_ (\(fp,n) -> do
+            Upload{..} <- createUpload tok uid did n (fromInteger fsize)
+            mapM_ (uploadChunk fp) _uploadParts
+            completeUpload tok _uploadID did n fsize
+        ) $ zip fps [1..]
+  markAvailable tok uid did mid
 
   pure mid
+
+uploadFile _ _ [] = fail "no files provided"
