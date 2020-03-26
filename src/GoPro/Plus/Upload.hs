@@ -8,7 +8,8 @@ module GoPro.Plus.Upload (MediumID, UID, UploadID, DerivativeID,
                            uploadFile,
                            createMedium, createDerivative, createUpload,
                            completeUpload, uploadChunk, markAvailable,
-                           Uploader, runUpload, resumeUpload
+                           Uploader, runUpload, resumeUpload,
+                           listUploading
                          ) where
 
 import           Control.Applicative    (liftA3)
@@ -35,6 +36,7 @@ import           System.Posix.Files     (fileSize, getFileStatus)
 import           UnliftIO               (MonadUnliftIO (..))
 
 import           GoPro.HTTP
+import           GoPro.Plus.Media       (Media (..), list)
 
 type MediumID = T.Text
 type UID = String
@@ -56,6 +58,10 @@ data Env = Env {
   fileList :: [FilePath],
   mediumID :: MediumID
   }
+
+listUploading :: MonadIO m => Token -> m [Media]
+listUploading tok = do
+  filter (\Media{..} -> _media_ready_to_view == "uploading") . fst <$> list tok 30 1
 
 runUpload :: MonadIO m => Token -> UID -> [FilePath] -> Uploader m a -> m a
 runUpload token userID fileList a = resumeUpload token userID fileList "" a
