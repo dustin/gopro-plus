@@ -35,6 +35,9 @@ dependencies:
 - vector
 - filepath
 - unix
+- mtl
+- transformers
+- unliftio
 
 library:
   source-dirs: src
