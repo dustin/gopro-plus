@@ -37,7 +37,9 @@ dependencies:
 - unix
 - mtl
 - transformers
+- exceptions
 - unliftio
+- retry
 
 library:
   source-dirs: src

@@ -15,10 +15,13 @@ module GoPro.Plus.Upload (MediumID, UID, UploadID, DerivativeID,
 
 import           Control.Applicative    (liftA3)
 import           Control.Lens
-import           Control.Monad          (void)
+import           Control.Monad          (void, when)
+import           Control.Monad.Catch    (MonadMask (..))
 import           Control.Monad.Fail     (MonadFail (..))
 import           Control.Monad.IO.Class (MonadIO (..))
 import           Control.Monad.State    (StateT (..), evalStateT, get, modify)
+import           Control.Retry          (RetryStatus (..), exponentialBackoff,
+                                         limitRetries, recoverAll)
 import qualified Data.Aeson             as J
 import           Data.Aeson.Lens
 import qualified Data.ByteString.Lazy   as BL
@@ -178,10 +181,14 @@ createUpload did part fsize = do
                                  (v ^? key "url" . _String . to T.unpack)
 
 -- | Upload a chunk of of the given file as specified by this UploadPart.
-uploadChunk :: MonadIO m => FilePath -> UploadPart -> m ()
-uploadChunk fp UploadPart{..} = liftIO $ withFile fp ReadMode $ \fh -> do
-  hSeek fh AbsoluteSeek ((_uploadPart - 1) * chunkSize)
-  void $ putWith defOpts _uploadURL =<< BL.hGet fh (fromIntegral _uploadLength)
+uploadChunk :: (MonadMask m, MonadIO m) => FilePath -> (Int -> m ()) -> UploadPart -> m ()
+uploadChunk fp retrycb UploadPart{..} = recoverAll policy $ \r -> do
+  when (rsIterNumber r > 0) $ retrycb (rsIterNumber r)
+  liftIO $ withFile fp ReadMode $ \fh -> do
+    hSeek fh AbsoluteSeek ((_uploadPart - 1) * chunkSize)
+    void $ putWith defOpts _uploadURL =<< BL.hGet fh (fromIntegral _uploadLength)
+
+    where policy = exponentialBackoff 2000000 <> limitRetries 5
 
 -- | Mark the given upload for the given derivative as complete.
 completeUpload :: MonadIO m => UploadID -> DerivativeID -> Int -> Integer -> Uploader m ()
@@ -223,7 +230,7 @@ markAvailable did = do
     popts tok = authOpts tok & header "Accept" .~  ["application/vnd.gopro.jk.user-uploads+json; version=2.0.0"]
 
 -- | Convenience function to upload a single medium.
-uploadMedium :: (MonadFail m, MonadIO m) => Token -> UID -> [FilePath] -> m MediumID
+uploadMedium :: (MonadMask m, MonadFail m, MonadIO m) => Token -> UID -> [FilePath] -> m MediumID
 uploadMedium _ _ [] = fail "no files provided"
 uploadMedium tok uid fps = runUpload tok uid fps $ do
   mid <- createMedium
@@ -231,7 +238,7 @@ uploadMedium tok uid fps = runUpload tok uid fps $ do
   mapM_ (\(fp,n) -> do
             fsize <- toInteger . fileSize <$> (liftIO . getFileStatus) fp
             Upload{..} <- createUpload did n (fromInteger fsize)
-            mapM_ (uploadChunk fp) _uploadParts
+            mapM_ (uploadChunk fp (const . pure $ ())) _uploadParts
             completeUpload _uploadID did n fsize
         ) $ zip fps [1..]
   markAvailable did
