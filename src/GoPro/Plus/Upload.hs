@@ -22,7 +22,7 @@ module GoPro.Plus.Upload (
   createMedium, createSource, createDerivative, createUpload,
   completeUpload, uploadChunk, markAvailable,
   -- * Data Types
-  UID, UploadID, DerivativeID,
+  UploadID, DerivativeID,
   UploadPart(..), uploadLength, uploadPart, uploadURL,
   Upload(..), uploadID, uploadParts,
   -- * Uploader monad.
@@ -32,37 +32,39 @@ module GoPro.Plus.Upload (
   listUploading
   ) where
 
-import           Control.Applicative      (liftA3)
+import           Control.Applicative          (liftA3)
 import           Control.Lens
-import           Control.Monad            (void, when)
-import           Control.Monad.Catch      (MonadMask (..))
-import           Control.Monad.Fail       (MonadFail (..))
-import           Control.Monad.IO.Class   (MonadIO (..))
-import           Control.Monad.State      (StateT (..), evalStateT, get, gets,
-                                           lift, modify)
-import           Control.Retry            (RetryStatus (..), exponentialBackoff,
-                                           limitRetries, recoverAll)
-import qualified Data.Aeson               as J
+import           Control.Monad                (void, when)
+import           Control.Monad.Catch          (MonadMask (..))
+import           Control.Monad.Fail           (MonadFail (..))
+import           Control.Monad.IO.Class       (MonadIO (..))
+import           Control.Monad.State          (StateT (..), evalStateT, get,
+                                               gets, lift, modify)
+import           Control.Retry                (RetryStatus (..),
+                                               exponentialBackoff, limitRetries,
+                                               recoverAll)
+import qualified Data.Aeson                   as J
 import           Data.Aeson.Lens
-import qualified Data.ByteString.Lazy     as BL
-import           Data.Char                (toUpper)
-import           Data.Maybe               (fromJust)
-import qualified Data.Text                as T
-import           Data.Time.Clock.POSIX    (getCurrentTime)
-import qualified Data.Vector              as V
-import           Network.Wreq             (Options, header, params, putWith)
-import           Prelude                  hiding (fail)
-import           System.FilePath.Posix    (takeExtension, takeFileName)
-import           System.IO                (IOMode (..), SeekMode (..), hSeek,
-                                           withFile)
-import           System.Posix.Files       (fileSize, getFileStatus)
-import           UnliftIO                 (MonadUnliftIO (..))
+import qualified Data.ByteString.Lazy         as BL
+import           Data.Char                    (toUpper)
+import           Data.Maybe                   (fromJust)
+import qualified Data.Text                    as T
+import           Data.Time.Clock.POSIX        (getCurrentTime)
+import qualified Data.Vector                  as V
+import           Network.Wreq                 (Options, header, params, putWith)
+import           Prelude                      hiding (fail)
+import           System.FilePath.Posix        (takeExtension, takeFileName)
+import           System.IO                    (IOMode (..), SeekMode (..),
+                                               hSeek, withFile)
+import           System.Posix.Files           (fileSize, getFileStatus)
+import           UnliftIO                     (MonadUnliftIO (..))
 
-import           GoPro.Plus.Auth          (AuthResponse (..), HasGoProAuth (..))
+import           GoPro.Plus.Auth              (AuthResponse (..),
+                                               HasGoProAuth (..))
+import           GoPro.Plus.Internal.AuthHTTP
 import           GoPro.Plus.Internal.HTTP
-import           GoPro.Plus.Media         (Medium (..), MediumID, list)
+import           GoPro.Plus.Media             (Medium (..), MediumID, list)
 
-type UID = String
 type UploadID = T.Text
 type DerivativeID = T.Text
 
@@ -76,9 +78,10 @@ instance MonadUnliftIO m => MonadUnliftIO (StateT (Env m) m) where
     get >>= \st -> StateT $ \_ ->
                               withRunInIO $ \run -> (,st) <$> inner (run . flip evalStateT st)
 
+instance HasGoProAuth m => HasGoProAuth (Uploader m) where
+  goproAuth = lift goproAuth
+
 data Env m = Env {
-  token      :: Token,
-  userID     :: UID,
   fileList   :: [FilePath],
   mediumType :: T.Text,
   extension  :: T.Text,
@@ -104,9 +107,7 @@ runUpload fileList a = resumeUpload fileList "" a
 resumeUpload :: (HasGoProAuth m, MonadFail m, MonadIO m) => [FilePath] -> MediumID -> Uploader m a -> m a
 resumeUpload [] _ _ = fail "empty file list"
 resumeUpload fileList@(fp:_) mediumID a =
-  goproAuth >>= \AuthResponse{..} -> let token=_access_token
-                                         userID=_resource_owner_id
-                                     in evalStateT a Env{..}
+  goproAuth >>= \AuthResponse{..} -> evalStateT a Env{..}
   where
     extension = T.pack . fmap toUpper . drop 1 . takeExtension $ filename
     filename = takeFileName fp
@@ -125,37 +126,42 @@ setMediumType t = modify (\m -> m{mediumType=t})
 setLogAction :: (Monad m, MonadMask m) => (String -> m ()) -> Uploader m ()
 setLogAction t = modify (\m -> m{logAction=t})
 
-jpostVal :: MonadIO m => Options -> String -> J.Value -> m J.Value
+jpostVal :: (HasGoProAuth m, MonadIO m) => Options -> String -> J.Value -> m J.Value
 jpostVal opts u v = liftIO $ jpostWith opts u v
 
+jpostAuthVal :: (HasGoProAuth m, MonadIO m) => String -> J.Value -> m J.Value
+jpostAuthVal = jpostAuth
+
 -- | Create a new medium (e.g., video, photo, etc...) and return its ID.
-createMedium :: MonadIO m =>  Uploader m MediumID
+createMedium :: (HasGoProAuth m, MonadIO m) => Uploader m MediumID
 createMedium = do
   Env{..} <- get
+  AuthResponse{..} <- goproAuth
   let m1 = J.Object (mempty & at "file_extension" ?~ J.String extension
                      & at "filename" ?~ J.String (T.pack filename)
                      & at "type" ?~ J.String mediumType
                      & at "on_public_profile" ?~ J.Bool False
                      & at "content_title" ?~ J.String (T.pack filename)
                      & at "content_source" ?~ J.String "web_media_library"
-                     & at "access_token" ?~ J.String (T.pack token)
-                     & at "gopro_user_id" ?~ J.String (T.pack userID))
-  m <- fromJust . preview (key "id" . _String) <$> jpostVal (authOpts token) "https://api.gopro.com/media" m1
+                     & at "access_token" ?~ J.String (T.pack _access_token)
+                     & at "gopro_user_id" ?~ J.String (T.pack _resource_owner_id))
+  m <- fromJust . preview (key "id" . _String) <$> jpostAuthVal "https://api.gopro.com/media" m1
   modify (\s -> s{mediumID=m})
   pure m
 
 -- | Convenient action for creating a Source derivative.
-createSource :: MonadIO m => Int -> Uploader m DerivativeID
+createSource :: (HasGoProAuth m, MonadIO m) => Int -> Uploader m DerivativeID
 createSource nparts = createDerivative nparts "Source" "Source"
 
 -- | Create a new derivative of the current medium containing the given number of parts.
-createDerivative :: MonadIO m
+createDerivative :: (HasGoProAuth m, MonadIO m)
                  => Int     -- ^ The number of parts this derivative contains.
                  -> T.Text  -- ^ The "type" of this derivative.
                  -> T.Text  -- ^ The label of this derivative.
                  -> Uploader m DerivativeID
 createDerivative nparts typ lbl = do
   Env{..} <- get
+  AuthResponse{..} <- goproAuth
   let d1 = J.Object (mempty & at "medium_id" ?~ J.String mediumID
                      & at "file_extension" ?~ J.String extension
                      & at "type" ?~ J.String  typ
@@ -164,9 +170,9 @@ createDerivative nparts typ lbl = do
                      & at "item_count" ?~ J.Number (fromIntegral nparts)
                      & at "camera_positions" ?~ J.String "default"
                      & at "on_public_profile" ?~ J.Bool False
-                     & at "access_token" ?~ J.String (T.pack token)
-                     & at "gopro_user_id" ?~ J.String (T.pack userID))
-  fromJust . preview (key "id" . _String) <$> jpostVal (authOpts token) "https://api.gopro.com/derivatives" d1
+                     & at "access_token" ?~ J.String (T.pack _access_token)
+                     & at "gopro_user_id" ?~ J.String (T.pack _resource_owner_id))
+  fromJust . preview (key "id" . _String) <$> jpostAuthVal "https://api.gopro.com/derivatives" d1
 
 data UploadPart = UploadPart {
   _uploadLength :: Integer,
@@ -187,37 +193,38 @@ chunkSize :: Integer
 chunkSize = 6291456
 
 -- | Create a new upload for a derivative.
-createUpload :: MonadIO m
+createUpload :: (HasGoProAuth m, MonadIO m)
              => DerivativeID -- ^ The derivative into which we're uploading.
              -> Int          -- ^ The part number (1-based) being uploaded.
              -> Int          -- ^ The size of the file being uploaded in this part.
              -> Uploader m Upload
 createUpload did part fsize = do
   Env{..} <- get
+  AuthResponse{..} <- goproAuth
   let u1 = J.Object (mempty & at "derivative_id" ?~ J.String did
                      & at "camera_position" ?~ J.String "default"
                      & at "item_number" ?~ J.Number (fromIntegral part)
-                     & at "access_token" ?~ J.String (T.pack token)
-                     & at "gopro_user_id" ?~ J.String (T.pack userID))
-  ur <- jpost token "https://api.gopro.com/user-uploads" u1
+                     & at "access_token" ?~ J.String (T.pack _access_token)
+                     & at "gopro_user_id" ?~ J.String (T.pack _resource_owner_id))
+  ur <- jpost "https://api.gopro.com/user-uploads" u1
 
   let Just upid = ur ^? key "id" . _String
-      upopts = authOpts token & params .~ [("id", upid),
-                                           ("page", "1"),
-                                           ("per_page", "100"),
-                                           ("item_number", (T.pack . show) part),
-                                           ("camera_position", "default"),
-                                           ("file_size", (T.pack . show) fsize),
-                                           ("part_size", (T.pack . show) chunkSize)]
-                              & header "Accept" .~  ["application/vnd.gopro.jk.user-uploads+json; version=2.0.0"]
+      upopts = authOpts _access_token & params .~ [("id", upid),
+                                                   ("page", "1"),
+                                                   ("per_page", "100"),
+                                                   ("item_number", (T.pack . show) part),
+                                                   ("camera_position", "default"),
+                                                   ("file_size", (T.pack . show) fsize),
+                                                   ("part_size", (T.pack . show) chunkSize)]
+               & header "Accept" .~  ["application/vnd.gopro.jk.user-uploads+json; version=2.0.0"]
   upaths <- (jgetWith upopts (T.unpack ("https://api.gopro.com/user-uploads/" <> did)))
   let Just ups = (upaths :: J.Value) ^? key "_embedded" . key "authorizations" . _Array . to V.toList
   pure $ Upload upid (fromJust $ traverse aChunk ups)
 
   where
     popts tok = authOpts tok & header "Accept" .~  ["application/vnd.gopro.jk.user-uploads+json; version=2.0.0"]
-    jpost :: MonadIO m => String ->  String -> J.Value -> m J.Value
-    jpost tok = jpostVal (popts tok)
+    jpost :: (HasGoProAuth m, MonadIO m) => String -> J.Value -> m J.Value
+    jpost u p = (_access_token <$> goproAuth) >>= \tok -> jpostVal (popts tok) u p
 
     tInt :: T.Text -> Integer
     tInt = read . T.unpack
@@ -242,7 +249,7 @@ uploadChunk fp UploadPart{..} = recoverAll policy $ \r -> do
                                 " part ", show _uploadPart, " attempt ", show a]
 
 -- | Mark the given upload for the given derivative as complete.
-completeUpload :: MonadIO m
+completeUpload :: (HasGoProAuth m, MonadIO m)
                => UploadID     -- ^ The upload ID.
                -> DerivativeID -- ^ The derivative ID.
                -> Int          -- ^ The part number within the derivative.
@@ -250,6 +257,7 @@ completeUpload :: MonadIO m
                -> Uploader m ()
 completeUpload upid did part fsize = do
   Env{..} <- get
+  AuthResponse{..} <- goproAuth
   let u2 = J.Object (mempty & at "id" ?~ J.String upid
                      & at "item_number" ?~ J.Number (fromIntegral part)
                      & at "camera_position" ?~ J.String "default"
@@ -257,30 +265,31 @@ completeUpload upid did part fsize = do
                      & at "derivative_id" ?~ J.String did
                      & at "file_size" ?~ J.String ((T.pack . show) fsize)
                      & at "part_size" ?~ J.String ((T.pack . show) chunkSize))
-  void . liftIO $ putWith (popts token) (T.unpack ("https://api.gopro.com/user-uploads/" <> did)) u2
+  void . liftIO $ putWith (popts _access_token) (T.unpack ("https://api.gopro.com/user-uploads/" <> did)) u2
 
   where
     popts tok = authOpts tok & header "Accept" .~  ["application/vnd.gopro.jk.user-uploads+json; version=2.0.0"]
 
 -- | Mark the given derivative as availble to use.  This also updates
 -- the medium record marking it as having completed its upload.
-markAvailable :: MonadIO m => DerivativeID -> Uploader m ()
+markAvailable :: (HasGoProAuth m, MonadIO m) => DerivativeID -> Uploader m ()
 markAvailable did = do
   Env{..} <- get
+  AuthResponse{..} <- goproAuth
   let d2 = J.Object (mempty & at "available" ?~ J.Bool True
-                     & at "access_token" ?~ J.String (T.pack token)
-                     & at "gopro_user_id" ?~ J.String (T.pack userID))
+                     & at "access_token" ?~ J.String (T.pack _access_token)
+                     & at "gopro_user_id" ?~ J.String (T.pack _resource_owner_id))
 
-  _ <- liftIO $ putWith (popts token) (T.unpack ("https://api.gopro.com/derivatives/" <> did)) d2
+  _ <- liftIO $ putWith (popts _access_token) (T.unpack ("https://api.gopro.com/derivatives/" <> did)) d2
 
   now <- liftIO $ getCurrentTime
   let done = J.Object (mempty & at "upload_completed_at" ?~ J.toJSON now
                        & at "client_updated_at" ?~ J.toJSON now
                        & at "revision_number" ?~ J.Number 0
-                       & at "access_token" ?~ J.String (T.pack token)
-                       & at "gopro_user_id" ?~ J.String (T.pack userID))
+                       & at "access_token" ?~ J.String (T.pack _access_token)
+                       & at "gopro_user_id" ?~ J.String (T.pack _resource_owner_id))
 
-  void . liftIO $ putWith (popts token) (T.unpack ("https://api.gopro.com/media/" <> mediumID)) done
+  void . liftIO $ putWith (popts _access_token) (T.unpack ("https://api.gopro.com/media/" <> mediumID)) done
 
   where
     popts tok = authOpts tok & header "Accept" .~  ["application/vnd.gopro.jk.user-uploads+json; version=2.0.0"]

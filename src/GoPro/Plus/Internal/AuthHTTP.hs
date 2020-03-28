@@ -4,9 +4,9 @@ import           Control.Lens
 import           Control.Monad.IO.Class   (MonadIO (..))
 import           Data.Aeson               (FromJSON (..))
 import qualified Data.ByteString.Lazy     as BL
-import           Network.Wreq             (Options, asJSON, getWith, putWith,
-                                           responseBody)
-import           Network.Wreq.Types       (Putable)
+import           Network.Wreq             (Options, asJSON, getWith, postWith,
+                                           putWith, responseBody)
+import           Network.Wreq.Types       (Postable, Putable)
 
 import           GoPro.Plus.Auth
 import           GoPro.Plus.Internal.HTTP
@@ -29,3 +29,6 @@ jputAuth u a = authOptsM >>= \o -> view responseBody <$> liftIO (putWith o u a >
 -- | Proxy a request to GoPro with authentication.
 proxyAuth :: (HasGoProAuth m, MonadIO m) => String -> m BL.ByteString
 proxyAuth u = (_access_token <$> goproAuth) >>= \tok -> proxy tok u
+
+jpostAuth :: (HasGoProAuth m, MonadIO m, Postable a, FromJSON r) => String -> a -> m r
+jpostAuth u v = authOptsM >>= \opts -> view responseBody <$> liftIO (postWith opts u v >>= asJSON)
