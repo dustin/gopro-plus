@@ -9,17 +9,21 @@ Stability   : experimental
 GoPro Plus authentication.
 -}
 
-{-# LANGUAGE DeriveGeneric   #-}
-{-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE DeriveGeneric        #-}
+{-# LANGUAGE FlexibleInstances    #-}
+{-# LANGUAGE RecordWildCards      #-}
+{-# LANGUAGE TemplateHaskell      #-}
+{-# LANGUAGE TypeSynonymInstances #-}
 
 module GoPro.Plus.Auth (
   authenticate, refreshAuth,
-  AuthResponse(..), access_token, expires_in, refresh_token, resource_owner_id
+  AuthResponse(..), access_token, expires_in, refresh_token, resource_owner_id,
+  HasGoProAuth(..), withAuth, AuthReader
   ) where
 
 import           Control.Lens
 import           Control.Monad.IO.Class   (MonadIO (..))
+import           Control.Monad.Reader     (ReaderT (..), ask, runReaderT)
 import           Data.Aeson               (FromJSON (..), genericParseJSON)
 import           Generics.Deriving.Base   (Generic)
 import           Network.Wreq             (FormParam (..))
@@ -41,6 +45,9 @@ data AuthResponse = AuthResponse {
   , _refresh_token     :: String
   , _resource_owner_id :: String
   } deriving(Generic, Show)
+
+class Monad m => HasGoProAuth m where
+  goproAuth :: m AuthResponse
 
 instance FromJSON AuthResponse where
   parseJSON = genericParseJSON jsonOpts
@@ -66,3 +73,14 @@ refreshAuth AuthResponse{..} =
                              "client_id" := apiClientID,
                              "client_secret" := apiClientSecret,
                              "refresh_token" := _refresh_token]
+
+type AuthReader = ReaderT AuthResponse
+
+instance Monad m => HasGoProAuth (AuthReader m) where
+  goproAuth = ask
+
+-- | Convenient function for passing around auth info.  You probably
+-- don't want to use this, but it can be conven ient when
+-- experimenting.
+withAuth :: (Monad m, HasGoProAuth m) => AuthResponse -> AuthReader m a -> m a
+withAuth = flip runReaderT

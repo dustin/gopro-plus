@@ -37,28 +37,31 @@ module GoPro.Plus.Media (
   FileInfo(..), fileStuff, filename,
   Error(..), error_reason, error_code, error_description, error_id,
   -- * Low-level Junk
-  putRawMedium
+  putMedium
   ) where
 
 import           Control.Lens
-import           Control.Monad.IO.Class   (MonadIO (..))
-import           Data.Aeson               (FromJSON (..), Options (..),
-                                           ToJSON (..), Value (..),
-                                           defaultOptions, fieldLabelModifier,
-                                           genericParseJSON, genericToEncoding,
-                                           genericToJSON, (.:))
-import           Data.Aeson.Types         (typeMismatch)
-import qualified Data.ByteString.Lazy     as BL
-import qualified Data.Map.Strict          as Map
-import qualified Data.Text                as T
-import           Data.Time.Clock          (UTCTime)
-import qualified Data.Vector              as V
-import           Generics.Deriving.Base   (Generic)
-import           Network.Wreq             (asJSON, deleteWith, putWith,
-                                           responseBody)
-import           System.Random            (getStdRandom, randomR)
+import           Control.Monad.IO.Class       (MonadIO (..))
+import           Data.Aeson                   (FromJSON (..), Options (..),
+                                               ToJSON (..), Value (..),
+                                               defaultOptions,
+                                               fieldLabelModifier,
+                                               genericParseJSON,
+                                               genericToEncoding, genericToJSON,
+                                               (.:))
+import           Data.Aeson.Types             (typeMismatch)
+import qualified Data.ByteString.Lazy         as BL
+import qualified Data.Map.Strict              as Map
+import qualified Data.Text                    as T
+import           Data.Time.Clock              (UTCTime)
+import qualified Data.Vector                  as V
+import           Generics.Deriving.Base       (Generic)
+import           Network.Wreq                 (asJSON, deleteWith, responseBody)
+import           Network.Wreq.Types           (Putable)
+import           System.Random                (getStdRandom, randomR)
 
-
+import           GoPro.Plus.Auth
+import           GoPro.Plus.Internal.AuthHTTP
 import           GoPro.Plus.Internal.HTTP
 
 data PageInfo = PageInfo {
@@ -110,10 +113,10 @@ thumbnailURL :: Int -> Medium -> String
 thumbnailURL n Medium{_medium_token} = "https://images-0" <> show n <> ".gopro.com/resize/450wwp/" <> _medium_token
 
 -- | Fetch thumbnail data for the given medium.
-fetchThumbnail :: MonadIO m => Token -> Medium -> m BL.ByteString
-fetchThumbnail tok m = do
+fetchThumbnail :: (HasGoProAuth m, MonadIO m) => Medium -> m BL.ByteString
+fetchThumbnail m = do
   n <- liftIO $ getStdRandom (randomR (1,4))
-  proxy tok (thumbnailURL n m)
+  proxyAuth (thumbnailURL n m)
 
 data Listing = Listing {
   _media :: [Medium],
@@ -131,23 +134,23 @@ instance FromJSON Listing where
   parseJSON invalid    = typeMismatch "Response" invalid
 
 -- | List a page worth of media.
-list :: MonadIO m => Token -> Int -> Int -> m ([Medium], PageInfo)
-list tok psize page = do
-  r <- jget tok ("https://api.gopro.com/media/search?fields=captured_at,created_at,file_size,id,moments_count,ready_to_view,source_duration,type,token,width,height,camera_model&order_by=created_at&per_page=" <> show psize <> "&page=" <> show page)
+list :: (HasGoProAuth m, MonadIO m) => Int -> Int -> m ([Medium], PageInfo)
+list psize page = do
+  r <- jgetAuth ("https://api.gopro.com/media/search?fields=captured_at,created_at,file_size,id,moments_count,ready_to_view,source_duration,type,token,width,height,camera_model&order_by=created_at&per_page=" <> show psize <> "&page=" <> show page)
   pure $ (r ^.. media . folded,
           r ^. pages)
 
 -- | List all media.
-listAll :: MonadIO m => Token -> m [Medium]
-listAll tok = listWhile tok (const True)
+listAll :: (HasGoProAuth m, MonadIO m) => m [Medium]
+listAll = listWhile (const True)
 
 -- | List all media while returned batches pass the given predicate.
-listWhile :: MonadIO m => Token -> ([Medium] -> Bool) -> m [Medium]
-listWhile tok f = do
+listWhile :: (HasGoProAuth m, MonadIO m) => ([Medium] -> Bool) -> m [Medium]
+listWhile f = do
   Map.elems <$> dig 0 mempty
     where
       dig n m = do
-        (ms, _) <- list tok 100 n
+        (ms, _) <- list 100 n
         let m' = Map.union m . Map.fromList . map (\md@Medium{..} -> (_medium_id, md)) $ ms
         if (not . null) ms && f ms
           then dig (n + 1) m'
@@ -247,8 +250,8 @@ dlURL k = "https://api.gopro.com/media/" <> T.unpack k <> "/download"
 -- | Get download descriptors for a given medium.  The format is
 -- typically 'FileInfo', but it can be useful to map it into something
 -- else.
-retrieve :: (FromJSON j, MonadIO m) => Token -> MediumID -> m j
-retrieve tok k = jget tok (dlURL k)
+retrieve :: (HasGoProAuth m, FromJSON j, MonadIO m) => MediumID -> m j
+retrieve k = jgetAuth (dlURL k)
 
 data Error = Error {
   _error_reason      :: String,
@@ -274,8 +277,9 @@ instance FromJSON Errors where
   parseJSON invalid    = typeMismatch "Response" invalid
 
 -- | Delete an item.
-delete :: MonadIO m => Token -> MediumID -> m [Error]
-delete tok k = do
+delete :: (HasGoProAuth m, MonadIO m) => MediumID -> m [Error]
+delete k = do
+  tok <- _access_token <$> goproAuth
   let u = "https://api.gopro.com/media?ids=" <> k
   Errors r <- view responseBody <$> liftIO (deleteWith (authOpts tok) (T.unpack u) >>= asJSON)
   pure r
@@ -284,9 +288,12 @@ mediumURL :: MediumID -> String
 mediumURL = ("https://api.gopro.com/media/" <>) . T.unpack
 
 -- | Get the current 'Medium' record for the given Medium ID.
-medium :: (FromJSON j, MonadIO m) => Token -> MediumID -> m j
-medium tok = jget tok . mediumURL
+medium :: (HasGoProAuth m, FromJSON j, MonadIO m) => MediumID -> m j
+medium = jgetAuth . mediumURL
 
-putRawMedium :: MonadIO m => Token -> MediumID -> Value -> m Value
-putRawMedium tok mid v = view responseBody <$> liftIO (putWith (authOpts tok) (mediumURL mid) v >>= asJSON)
-
+-- | Put a Medium.  It's probably best to get a raw JSON Value and update it in place.
+putMedium :: (HasGoProAuth m, MonadIO m, Putable a) => MediumID -> a -> m ()
+putMedium mid = fmap v . jputAuth (mediumURL mid)
+  where
+    v :: Value -> ()
+    v = const ()

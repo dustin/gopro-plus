@@ -58,6 +58,7 @@ import           System.IO                (IOMode (..), SeekMode (..), hSeek,
 import           System.Posix.Files       (fileSize, getFileStatus)
 import           UnliftIO                 (MonadUnliftIO (..))
 
+import           GoPro.Plus.Auth          (AuthResponse (..), HasGoProAuth (..))
 import           GoPro.Plus.Internal.HTTP
 import           GoPro.Plus.Media         (Medium (..), MediumID, list)
 
@@ -87,24 +88,25 @@ data Env m = Env {
   }
 
 -- | List all media in uploading state.
-listUploading :: MonadIO m => Token -> m [Medium]
-listUploading tok = do
-  filter (\Medium{..} -> _medium_ready_to_view == "uploading") . fst <$> list tok 30 1
+listUploading :: (HasGoProAuth m, MonadIO m) => m [Medium]
+listUploading = do
+  filter (\Medium{..} -> _medium_ready_to_view == "uploading") . fst <$> list 30 1
 
 -- | Run an Uploader monad to create a single medium and upload the content for it.
-runUpload :: (MonadFail m, MonadIO m)
-          => Token        -- ^ GoPro Plus authentication token.
-          -> UID          -- ^ GoPro Plus user ID.
-          -> [FilePath]   -- ^ The list of files to include in the medium.
+runUpload :: (HasGoProAuth m, MonadFail m, MonadIO m)
+          => [FilePath]   -- ^ The list of files to include in the medium.
           -> Uploader m a -- ^ The action to perform.
           -> m a          -- ^ The result of the inner action.
-runUpload token userID fileList a = resumeUpload token userID fileList "" a
+runUpload fileList a = resumeUpload fileList "" a
 
 -- | Run an Uploader monad for which we already know the MediumID
 -- (i.e., we're resuming an upload we previously began).
-resumeUpload :: (MonadFail m, MonadIO m) => Token -> UID -> [FilePath] -> MediumID -> Uploader m a -> m a
-resumeUpload _ _ [] _ _ = fail "empty file list"
-resumeUpload token userID fileList@(fp:_) mediumID a = evalStateT a Env{..}
+resumeUpload :: (HasGoProAuth m, MonadFail m, MonadIO m) => [FilePath] -> MediumID -> Uploader m a -> m a
+resumeUpload [] _ _ = fail "empty file list"
+resumeUpload fileList@(fp:_) mediumID a =
+  goproAuth >>= \AuthResponse{..} -> let token=_access_token
+                                         userID=_resource_owner_id
+                                     in evalStateT a Env{..}
   where
     extension = T.pack . fmap toUpper . drop 1 . takeExtension $ filename
     filename = takeFileName fp
@@ -284,13 +286,11 @@ markAvailable did = do
     popts tok = authOpts tok & header "Accept" .~  ["application/vnd.gopro.jk.user-uploads+json; version=2.0.0"]
 
 -- | Convenience action to upload a single medium.
-uploadMedium :: (MonadMask m, MonadFail m, MonadIO m)
-             => Token      -- ^ Bearer token.
-             -> UID        -- ^ User ID.
-             -> [FilePath] -- ^ Parts of a single medium to upload (e.g., a video file).
+uploadMedium :: (HasGoProAuth m, MonadMask m, MonadFail m, MonadIO m)
+             => [FilePath] -- ^ Parts of a single medium to upload (e.g., a video file).
              -> m MediumID
-uploadMedium _ _ [] = fail "no files provided"
-uploadMedium tok uid fps = runUpload tok uid fps $ do
+uploadMedium [] = fail "no files provided"
+uploadMedium fps = runUpload fps $ do
   mid <- createMedium
   did <- createSource (length fps)
   mapM_ (\(fp,n) -> do
