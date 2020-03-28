@@ -1,4 +1,4 @@
-module GoPro.HTTP where
+module GoPro.Plus.Internal.HTTP where
 
 import           Control.Lens
 import           Control.Monad.IO.Class (MonadIO (..))

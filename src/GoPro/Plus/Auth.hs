@@ -1,17 +1,31 @@
+{-|
+Module      : GoPro.Plus.Auth
+Description : Functionality for authenticating to GoPro Plus.
+Copyright   : (c) Dustin Sallings, 2020
+License     : BSD3
+Maintainer  : dustin@spy.net
+Stability   : experimental
+
+GoPro Plus authentication.
+-}
+
 {-# LANGUAGE DeriveGeneric   #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module GoPro.Plus.Auth where
+module GoPro.Plus.Auth (
+  authenticate, refreshAuth,
+  AuthResponse(..), access_token, expires_in, refresh_token, resource_owner_id
+  ) where
 
 import           Control.Lens
-import           Control.Monad.IO.Class (MonadIO (..))
-import           Data.Aeson             (FromJSON (..), genericParseJSON)
-import           Generics.Deriving.Base (Generic)
-import           Network.Wreq           (FormParam (..))
+import           Control.Monad.IO.Class   (MonadIO (..))
+import           Data.Aeson               (FromJSON (..), genericParseJSON)
+import           Generics.Deriving.Base   (Generic)
+import           Network.Wreq             (FormParam (..))
 
 
-import           GoPro.HTTP
+import           GoPro.Plus.Internal.HTTP
 
 apiClientID, apiClientSecret :: String
 apiClientID = "71611e67ea968cfacf45e2b6936c81156fcf5dbe553a2bf2d342da1562d05f46"
@@ -33,7 +47,10 @@ instance FromJSON AuthResponse where
 
 makeLenses ''AuthResponse
 
-authenticate :: MonadIO m => String -> String -> m AuthResponse
+authenticate :: MonadIO m
+             => String -- ^ Email/username
+             -> String -- ^ Password
+             -> m AuthResponse
 authenticate username password =
   jpostWith defOpts authURL ["grant_type" := ("password" :: String),
                              "client_id" := apiClientID,

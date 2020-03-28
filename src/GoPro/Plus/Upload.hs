@@ -1,77 +1,103 @@
+{-|
+Module      : GoPro.Plus.Upload
+Description : Functionality for uploading media to GoPro Plus.
+Copyright   : (c) Dustin Sallings, 2020
+License     : BSD3
+Maintainer  : dustin@spy.net
+Stability   : experimental
+
+GoPro Plus media upload client.
+-}
+
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE RankNTypes        #-}
 {-# LANGUAGE TemplateHaskell   #-}
 {-# LANGUAGE TupleSections     #-}
 
-module GoPro.Plus.Upload (MediumID, UID, UploadID, DerivativeID,
-                          UploadPart(..), uploadLength, uploadPart, uploadURL,
-                          Upload(..), uploadID, uploadParts,
-                           uploadMedium,
-                           createMedium, createDerivative, createUpload,
-                           completeUpload, uploadChunk, markAvailable,
-                           Uploader, runUpload, resumeUpload,
-                           setMediumType,
-                           listUploading
-                         ) where
+module GoPro.Plus.Upload (
+  -- * High level upload all-in-one convenience.
+  uploadMedium,
+  -- * Low-level upload parts.
+  runUpload, resumeUpload,
+  createMedium, createSource, createDerivative, createUpload,
+  completeUpload, uploadChunk, markAvailable,
+  -- * Data Types
+  UID, UploadID, DerivativeID,
+  UploadPart(..), uploadLength, uploadPart, uploadURL,
+  Upload(..), uploadID, uploadParts,
+  -- * Uploader monad.
+  Uploader,
+  setMediumType, setLogAction,
+  -- * For your convenience.
+  listUploading
+  ) where
 
-import           Control.Applicative    (liftA3)
+import           Control.Applicative      (liftA3)
 import           Control.Lens
-import           Control.Monad          (void, when)
-import           Control.Monad.Catch    (MonadMask (..))
-import           Control.Monad.Fail     (MonadFail (..))
-import           Control.Monad.IO.Class (MonadIO (..))
-import           Control.Monad.State    (StateT (..), evalStateT, get, modify)
-import           Control.Retry          (RetryStatus (..), exponentialBackoff,
-                                         limitRetries, recoverAll)
-import qualified Data.Aeson             as J
+import           Control.Monad            (void, when)
+import           Control.Monad.Catch      (MonadMask (..))
+import           Control.Monad.Fail       (MonadFail (..))
+import           Control.Monad.IO.Class   (MonadIO (..))
+import           Control.Monad.State      (StateT (..), evalStateT, get, gets,
+                                           lift, modify)
+import           Control.Retry            (RetryStatus (..), exponentialBackoff,
+                                           limitRetries, recoverAll)
+import qualified Data.Aeson               as J
 import           Data.Aeson.Lens
-import qualified Data.ByteString.Lazy   as BL
-import           Data.Char              (toUpper)
-import           Data.Maybe             (fromJust)
-import qualified Data.Text              as T
-import           Data.Time.Clock.POSIX  (getCurrentTime)
-import qualified Data.Vector            as V
-import           Network.Wreq           (Options, header, params, putWith)
-import           Prelude                hiding (fail)
-import           System.FilePath.Posix  (takeExtension, takeFileName)
-import           System.IO              (IOMode (..), SeekMode (..), hSeek,
-                                         withFile)
-import           System.Posix.Files     (fileSize, getFileStatus)
-import           UnliftIO               (MonadUnliftIO (..))
+import qualified Data.ByteString.Lazy     as BL
+import           Data.Char                (toUpper)
+import           Data.Maybe               (fromJust)
+import qualified Data.Text                as T
+import           Data.Time.Clock.POSIX    (getCurrentTime)
+import qualified Data.Vector              as V
+import           Network.Wreq             (Options, header, params, putWith)
+import           Prelude                  hiding (fail)
+import           System.FilePath.Posix    (takeExtension, takeFileName)
+import           System.IO                (IOMode (..), SeekMode (..), hSeek,
+                                           withFile)
+import           System.Posix.Files       (fileSize, getFileStatus)
+import           UnliftIO                 (MonadUnliftIO (..))
 
-import           GoPro.HTTP
-import           GoPro.Plus.Media       (Media (..), list)
+import           GoPro.Plus.Internal.HTTP
+import           GoPro.Plus.Media         (Medium (..), MediumID, list)
 
-type MediumID = T.Text
 type UID = String
 type UploadID = T.Text
 type DerivativeID = T.Text
 
-type Uploader = StateT Env
+-- | GoPro Plus uploader monad.
+type Uploader m = StateT (Env m) m
 
 -- This is typically a bad idea, but we assume we only mutate state
 -- before we'd ever need an unlift.
-instance MonadUnliftIO m => MonadUnliftIO (StateT Env m) where
+instance MonadUnliftIO m => MonadUnliftIO (StateT (Env m) m) where
   withRunInIO inner =
     get >>= \st -> StateT $ \_ ->
                               withRunInIO $ \run -> (,st) <$> inner (run . flip evalStateT st)
 
-data Env = Env {
+data Env m = Env {
   token      :: Token,
   userID     :: UID,
   fileList   :: [FilePath],
   mediumType :: T.Text,
   extension  :: T.Text,
   filename   :: String,
-  mediumID   :: MediumID
+  mediumID   :: MediumID,
+  logAction  :: (MonadMask m, Monad m) => String -> m ()
   }
 
 -- | List all media in uploading state.
-listUploading :: MonadIO m => Token -> m [Media]
+listUploading :: MonadIO m => Token -> m [Medium]
 listUploading tok = do
-  filter (\Media{..} -> _media_ready_to_view == "uploading") . fst <$> list tok 30 1
+  filter (\Medium{..} -> _medium_ready_to_view == "uploading") . fst <$> list tok 30 1
 
--- | Run an Uploader monad.
-runUpload :: (MonadFail m, MonadIO m) => Token -> UID -> [FilePath] -> Uploader m a -> m a
+-- | Run an Uploader monad to create a single medium and upload the content for it.
+runUpload :: (MonadFail m, MonadIO m)
+          => Token        -- ^ GoPro Plus authentication token.
+          -> UID          -- ^ GoPro Plus user ID.
+          -> [FilePath]   -- ^ The list of files to include in the medium.
+          -> Uploader m a -- ^ The action to perform.
+          -> m a          -- ^ The result of the inner action.
 runUpload token userID fileList a = resumeUpload token userID fileList "" a
 
 -- | Run an Uploader monad for which we already know the MediumID
@@ -83,6 +109,7 @@ resumeUpload token userID fileList@(fp:_) mediumID a = evalStateT a Env{..}
     extension = T.pack . fmap toUpper . drop 1 . takeExtension $ filename
     filename = takeFileName fp
     mediumType = fileType extension
+    logAction _ = pure ()
 
     fileType "JPG" = "Photo"
     fileType _     = "Video"
@@ -91,10 +118,15 @@ resumeUpload token userID fileList@(fp:_) mediumID a = evalStateT a Env{..}
 setMediumType :: Monad m => T.Text -> Uploader m ()
 setMediumType t = modify (\m -> m{mediumType=t})
 
+-- | Set the logging action to report retries (or whatever other
+-- interesting things might happen).
+setLogAction :: (Monad m, MonadMask m) => (String -> m ()) -> Uploader m ()
+setLogAction t = modify (\m -> m{logAction=t})
+
 jpostVal :: MonadIO m => Options -> String -> J.Value -> m J.Value
 jpostVal opts u v = liftIO $ jpostWith opts u v
 
--- | Create a new medium (e.g., video, photo, etc...).
+-- | Create a new medium (e.g., video, photo, etc...) and return its ID.
 createMedium :: MonadIO m =>  Uploader m MediumID
 createMedium = do
   Env{..} <- get
@@ -110,14 +142,22 @@ createMedium = do
   modify (\s -> s{mediumID=m})
   pure m
 
+-- | Convenient action for creating a Source derivative.
+createSource :: MonadIO m => Int -> Uploader m DerivativeID
+createSource nparts = createDerivative nparts "Source" "Source"
+
 -- | Create a new derivative of the current medium containing the given number of parts.
-createDerivative :: MonadIO m => Int -> Uploader m DerivativeID
-createDerivative nparts = do
+createDerivative :: MonadIO m
+                 => Int     -- ^ The number of parts this derivative contains.
+                 -> T.Text  -- ^ The "type" of this derivative.
+                 -> T.Text  -- ^ The label of this derivative.
+                 -> Uploader m DerivativeID
+createDerivative nparts typ lbl = do
   Env{..} <- get
   let d1 = J.Object (mempty & at "medium_id" ?~ J.String mediumID
                      & at "file_extension" ?~ J.String extension
-                     & at "type" ?~ J.String "Source"
-                     & at "label" ?~ J.String "Source"
+                     & at "type" ?~ J.String  typ
+                     & at "label" ?~ J.String lbl
                      & at "available" ?~ J.Bool False
                      & at "item_count" ?~ J.Number (fromIntegral nparts)
                      & at "camera_positions" ?~ J.String "default"
@@ -145,7 +185,11 @@ chunkSize :: Integer
 chunkSize = 6291456
 
 -- | Create a new upload for a derivative.
-createUpload :: MonadIO m => DerivativeID -> Int -> Int -> Uploader m Upload
+createUpload :: MonadIO m
+             => DerivativeID -- ^ The derivative into which we're uploading.
+             -> Int          -- ^ The part number (1-based) being uploaded.
+             -> Int          -- ^ The size of the file being uploaded in this part.
+             -> Uploader m Upload
 createUpload did part fsize = do
   Env{..} <- get
   let u1 = J.Object (mempty & at "derivative_id" ?~ J.String did
@@ -181,17 +225,27 @@ createUpload did part fsize = do
                                  (v ^? key "url" . _String . to T.unpack)
 
 -- | Upload a chunk of of the given file as specified by this UploadPart.
-uploadChunk :: (MonadMask m, MonadIO m) => FilePath -> (Int -> m ()) -> UploadPart -> m ()
-uploadChunk fp retrycb UploadPart{..} = recoverAll policy $ \r -> do
-  when (rsIterNumber r > 0) $ retrycb (rsIterNumber r)
+uploadChunk :: (MonadMask m, MonadIO m)
+            => FilePath    -- ^ The path being uploaded.
+            -> UploadPart  -- ^ The UploadPart describing the chunk of upload being transferred
+            -> Uploader m ()
+uploadChunk fp UploadPart{..} = recoverAll policy $ \r -> do
+  when (rsIterNumber r > 0) $ gets logAction >>= \f -> lift (f (retryMsg (rsIterNumber r)))
   liftIO $ withFile fp ReadMode $ \fh -> do
     hSeek fh AbsoluteSeek ((_uploadPart - 1) * chunkSize)
     void $ putWith defOpts _uploadURL =<< BL.hGet fh (fromIntegral _uploadLength)
 
     where policy = exponentialBackoff 2000000 <> limitRetries 5
+          retryMsg a = mconcat ["Retrying upload of ", show fp,
+                                " part ", show _uploadPart, " attempt ", show a]
 
 -- | Mark the given upload for the given derivative as complete.
-completeUpload :: MonadIO m => UploadID -> DerivativeID -> Int -> Integer -> Uploader m ()
+completeUpload :: MonadIO m
+               => UploadID     -- ^ The upload ID.
+               -> DerivativeID -- ^ The derivative ID.
+               -> Int          -- ^ The part number within the derivative.
+               -> Integer      -- ^ The size of the file that was uploaded.
+               -> Uploader m ()
 completeUpload upid did part fsize = do
   Env{..} <- get
   let u2 = J.Object (mempty & at "id" ?~ J.String upid
@@ -229,16 +283,20 @@ markAvailable did = do
   where
     popts tok = authOpts tok & header "Accept" .~  ["application/vnd.gopro.jk.user-uploads+json; version=2.0.0"]
 
--- | Convenience function to upload a single medium.
-uploadMedium :: (MonadMask m, MonadFail m, MonadIO m) => Token -> UID -> [FilePath] -> m MediumID
+-- | Convenience action to upload a single medium.
+uploadMedium :: (MonadMask m, MonadFail m, MonadIO m)
+             => Token      -- ^ Bearer token.
+             -> UID        -- ^ User ID.
+             -> [FilePath] -- ^ Parts of a single medium to upload (e.g., a video file).
+             -> m MediumID
 uploadMedium _ _ [] = fail "no files provided"
 uploadMedium tok uid fps = runUpload tok uid fps $ do
   mid <- createMedium
-  did <- createDerivative (length fps)
+  did <- createSource (length fps)
   mapM_ (\(fp,n) -> do
             fsize <- toInteger . fileSize <$> (liftIO . getFileStatus) fp
             Upload{..} <- createUpload did n (fromInteger fsize)
-            mapM_ (uploadChunk fp (const . pure $ ())) _uploadParts
+            mapM_ (uploadChunk fp) _uploadParts
             completeUpload _uploadID did n fsize
         ) $ zip fps [1..]
   markAvailable did
