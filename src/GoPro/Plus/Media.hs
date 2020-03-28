@@ -241,13 +241,13 @@ instance FromJSON FileInfo where
     FileInfo fs <$> v .: "filename"
   parseJSON invalid    = typeMismatch "Response" invalid
 
-dlURL :: String -> String
-dlURL k = "https://api.gopro.com/media/" <> k <> "/download"
+dlURL :: MediumID -> String
+dlURL k = "https://api.gopro.com/media/" <> T.unpack k <> "/download"
 
 -- | Get download descriptors for a given medium.  The format is
 -- typically 'FileInfo', but it can be useful to map it into something
 -- else.
-retrieve :: (FromJSON j, MonadIO m) => Token -> String -> m j
+retrieve :: (FromJSON j, MonadIO m) => Token -> MediumID -> m j
 retrieve tok k = jget tok (dlURL k)
 
 data Error = Error {
@@ -274,19 +274,19 @@ instance FromJSON Errors where
   parseJSON invalid    = typeMismatch "Response" invalid
 
 -- | Delete an item.
-delete :: MonadIO m => Token -> String -> m [Error]
+delete :: MonadIO m => Token -> MediumID -> m [Error]
 delete tok k = do
   let u = "https://api.gopro.com/media?ids=" <> k
-  Errors r <- view responseBody <$> liftIO (deleteWith (authOpts tok) u >>= asJSON)
+  Errors r <- view responseBody <$> liftIO (deleteWith (authOpts tok) (T.unpack u) >>= asJSON)
   pure r
 
-mediumURL :: String -> String
-mediumURL = ("https://api.gopro.com/media/" <>)
+mediumURL :: MediumID -> String
+mediumURL = ("https://api.gopro.com/media/" <>) . T.unpack
 
 -- | Get the current 'Medium' record for the given Medium ID.
 medium :: (FromJSON j, MonadIO m) => Token -> MediumID -> m j
-medium tok = jget tok . mediumURL . T.unpack
+medium tok = jget tok . mediumURL
 
-putRawMedium :: MonadIO m => Token -> String -> Value -> m Value
+putRawMedium :: MonadIO m => Token -> MediumID -> Value -> m Value
 putRawMedium tok mid v = view responseBody <$> liftIO (putWith (authOpts tok) (mediumURL mid) v >>= asJSON)
 
