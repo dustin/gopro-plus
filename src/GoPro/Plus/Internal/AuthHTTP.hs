@@ -13,7 +13,7 @@ import           GoPro.Plus.Internal.HTTP
 
 
 jgetAuth :: (HasGoProAuth m, MonadIO m, FromJSON a) => String -> m a
-jgetAuth u = goproAuth >>= \AuthResponse{..} -> jgetWith (authOpts _access_token) u
+jgetAuth u = goproAuth >>= \AuthInfo{..} -> jgetWith (authOpts _access_token) u
 
 
 authOptsM :: HasGoProAuth m => m Network.Wreq.Options

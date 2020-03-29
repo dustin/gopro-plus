@@ -59,8 +59,7 @@ import           System.IO                    (IOMode (..), SeekMode (..),
 import           System.Posix.Files           (fileSize, getFileStatus)
 import           UnliftIO                     (MonadUnliftIO (..))
 
-import           GoPro.Plus.Auth              (AuthResponse (..),
-                                               HasGoProAuth (..))
+import           GoPro.Plus.Auth              (AuthInfo (..), HasGoProAuth (..))
 import           GoPro.Plus.Internal.AuthHTTP
 import           GoPro.Plus.Internal.HTTP
 import           GoPro.Plus.Media             (Medium (..), MediumID, list)
@@ -107,7 +106,7 @@ runUpload fileList a = resumeUpload fileList "" a
 resumeUpload :: (HasGoProAuth m, MonadFail m, MonadIO m) => [FilePath] -> MediumID -> Uploader m a -> m a
 resumeUpload [] _ _ = fail "empty file list"
 resumeUpload fileList@(fp:_) mediumID a =
-  goproAuth >>= \AuthResponse{..} -> evalStateT a Env{..}
+  goproAuth >>= \AuthInfo{..} -> evalStateT a Env{..}
   where
     extension = T.pack . fmap toUpper . drop 1 . takeExtension $ filename
     filename = takeFileName fp
@@ -136,15 +135,15 @@ jpostAuthVal = jpostAuth
 createMedium :: (HasGoProAuth m, MonadIO m) => Uploader m MediumID
 createMedium = do
   Env{..} <- get
-  AuthResponse{..} <- goproAuth
+  AuthInfo{..} <- goproAuth
   let m1 = J.Object (mempty & at "file_extension" ?~ J.String extension
                      & at "filename" ?~ J.String (T.pack filename)
                      & at "type" ?~ J.String mediumType
                      & at "on_public_profile" ?~ J.Bool False
                      & at "content_title" ?~ J.String (T.pack filename)
                      & at "content_source" ?~ J.String "web_media_library"
-                     & at "access_token" ?~ J.String (T.pack _access_token)
-                     & at "gopro_user_id" ?~ J.String (T.pack _resource_owner_id))
+                     & at "access_token" ?~ J.String _access_token
+                     & at "gopro_user_id" ?~ J.String _resource_owner_id)
   m <- fromJust . preview (key "id" . _String) <$> jpostAuthVal "https://api.gopro.com/media" m1
   modify (\s -> s{mediumID=m})
   pure m
@@ -161,7 +160,7 @@ createDerivative :: (HasGoProAuth m, MonadIO m)
                  -> Uploader m DerivativeID
 createDerivative nparts typ lbl = do
   Env{..} <- get
-  AuthResponse{..} <- goproAuth
+  AuthInfo{..} <- goproAuth
   let d1 = J.Object (mempty & at "medium_id" ?~ J.String mediumID
                      & at "file_extension" ?~ J.String extension
                      & at "type" ?~ J.String  typ
@@ -170,8 +169,8 @@ createDerivative nparts typ lbl = do
                      & at "item_count" ?~ J.Number (fromIntegral nparts)
                      & at "camera_positions" ?~ J.String "default"
                      & at "on_public_profile" ?~ J.Bool False
-                     & at "access_token" ?~ J.String (T.pack _access_token)
-                     & at "gopro_user_id" ?~ J.String (T.pack _resource_owner_id))
+                     & at "access_token" ?~ J.String _access_token
+                     & at "gopro_user_id" ?~ J.String _resource_owner_id)
   fromJust . preview (key "id" . _String) <$> jpostAuthVal "https://api.gopro.com/derivatives" d1
 
 data UploadPart = UploadPart {
@@ -200,12 +199,12 @@ createUpload :: (HasGoProAuth m, MonadIO m)
              -> Uploader m Upload
 createUpload did part fsize = do
   Env{..} <- get
-  AuthResponse{..} <- goproAuth
+  AuthInfo{..} <- goproAuth
   let u1 = J.Object (mempty & at "derivative_id" ?~ J.String did
                      & at "camera_position" ?~ J.String "default"
                      & at "item_number" ?~ J.Number (fromIntegral part)
-                     & at "access_token" ?~ J.String (T.pack _access_token)
-                     & at "gopro_user_id" ?~ J.String (T.pack _resource_owner_id))
+                     & at "access_token" ?~ J.String _access_token
+                     & at "gopro_user_id" ?~ J.String _resource_owner_id)
   ur <- jpost "https://api.gopro.com/user-uploads" u1
 
   let Just upid = ur ^? key "id" . _String
@@ -257,7 +256,7 @@ completeUpload :: (HasGoProAuth m, MonadIO m)
                -> Uploader m ()
 completeUpload upid did part fsize = do
   Env{..} <- get
-  AuthResponse{..} <- goproAuth
+  AuthInfo{..} <- goproAuth
   let u2 = J.Object (mempty & at "id" ?~ J.String upid
                      & at "item_number" ?~ J.Number (fromIntegral part)
                      & at "camera_position" ?~ J.String "default"
@@ -275,10 +274,10 @@ completeUpload upid did part fsize = do
 markAvailable :: (HasGoProAuth m, MonadIO m) => DerivativeID -> Uploader m ()
 markAvailable did = do
   Env{..} <- get
-  AuthResponse{..} <- goproAuth
+  AuthInfo{..} <- goproAuth
   let d2 = J.Object (mempty & at "available" ?~ J.Bool True
-                     & at "access_token" ?~ J.String (T.pack _access_token)
-                     & at "gopro_user_id" ?~ J.String (T.pack _resource_owner_id))
+                     & at "access_token" ?~ J.String _access_token
+                     & at "gopro_user_id" ?~ J.String _resource_owner_id)
 
   _ <- liftIO $ putWith (popts _access_token) (T.unpack ("https://api.gopro.com/derivatives/" <> did)) d2
 
@@ -286,8 +285,8 @@ markAvailable did = do
   let done = J.Object (mempty & at "upload_completed_at" ?~ J.toJSON now
                        & at "client_updated_at" ?~ J.toJSON now
                        & at "revision_number" ?~ J.Number 0
-                       & at "access_token" ?~ J.String (T.pack _access_token)
-                       & at "gopro_user_id" ?~ J.String (T.pack _resource_owner_id))
+                       & at "access_token" ?~ J.String _access_token
+                       & at "gopro_user_id" ?~ J.String _resource_owner_id)
 
   void . liftIO $ putWith (popts _access_token) (T.unpack ("https://api.gopro.com/media/" <> mediumID)) done
 
