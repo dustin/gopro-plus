@@ -62,7 +62,8 @@ import           UnliftIO                     (MonadUnliftIO (..))
 import           GoPro.Plus.Auth              (AuthInfo (..), HasGoProAuth (..))
 import           GoPro.Plus.Internal.AuthHTTP
 import           GoPro.Plus.Internal.HTTP
-import           GoPro.Plus.Media             (Medium (..), MediumID, list)
+import           GoPro.Plus.Media             (Medium (..), MediumID, list,
+                                               putMedium)
 
 type UploadID = T.Text
 type DerivativeID = T.Text
@@ -288,7 +289,7 @@ markAvailable did = do
                        & at "access_token" ?~ J.String _access_token
                        & at "gopro_user_id" ?~ J.String _resource_owner_id)
 
-  void . liftIO $ putWith (popts _access_token) (T.unpack ("https://api.gopro.com/media/" <> mediumID)) done
+  putMedium mediumID done
 
   where
     popts tok = authOpts tok & header "Accept" .~  ["application/vnd.gopro.jk.user-uploads+json; version=2.0.0"]
