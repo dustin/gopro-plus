@@ -82,7 +82,7 @@ instance Monad m => HasGoProAuth (AuthReader m) where
   goproAuth = ask
 
 -- | Convenient function for passing around auth info.  You probably
--- don't want to use this, but it can be conven ient when
+-- don't want to use this, but it can be convenient when
 -- experimenting.
-withAuth :: (Monad m, HasGoProAuth m) => AuthInfo -> AuthReader m a -> m a
+withAuth :: AuthInfo -> AuthReader m a -> m a
 withAuth = flip runReaderT
