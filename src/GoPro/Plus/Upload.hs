@@ -62,7 +62,8 @@ import           UnliftIO                     (MonadUnliftIO (..))
 import           GoPro.Plus.Auth              (AuthInfo (..), HasGoProAuth (..))
 import           GoPro.Plus.Internal.AuthHTTP
 import           GoPro.Plus.Internal.HTTP
-import           GoPro.Plus.Media             (Medium (..), MediumID, list,
+import           GoPro.Plus.Media             (Medium (..), MediumID,
+                                               ReadyToViewType (..), list,
                                                putMedium)
 
 type UploadID = T.Text
@@ -92,7 +93,7 @@ data Env m = Env {
 
 -- | List all media in uploading state.
 listUploading :: (HasGoProAuth m, MonadIO m) => m [Medium]
-listUploading = filter (\Medium{..} -> _medium_ready_to_view == "uploading") . fst <$> list 30 1
+listUploading = filter (\Medium{..} -> _medium_ready_to_view == ViewUploading) . fst <$> list 30 1
 
 -- | Run an Uploader monad to create a single medium and upload the content for it.
 runUpload :: (HasGoProAuth m, MonadFail m, MonadIO m)

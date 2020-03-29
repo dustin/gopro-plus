@@ -20,7 +20,7 @@ module GoPro.Plus.Media (
   fetchThumbnail,
   -- * Data Types
   PageInfo(..), current_page, per_page, total_items, total_pages,
-  MediumID,
+  MediumID, MediumType(..), ReadyToViewType(..),
   Medium(..), medium_id, medium_camera_model, medium_captured_at,
   medium_created_at, medium_file_size, medium_moments_count,
   medium_ready_to_view, medium_source_duration, medium_type,
@@ -49,8 +49,10 @@ import           Data.Aeson                   (FromJSON (..), Options (..),
                                                genericParseJSON,
                                                genericToEncoding, genericToJSON,
                                                (.:))
+import qualified Data.Aeson                   as J
 import           Data.Aeson.Types             (typeMismatch)
 import qualified Data.ByteString.Lazy         as BL
+import           Data.Char                    (toLower, toUpper)
 import qualified Data.Map.Strict              as Map
 import qualified Data.Text                    as T
 import           Data.Time.Clock              (UTCTime)
@@ -78,6 +80,29 @@ instance FromJSON PageInfo where
 
 type MediumID = T.Text
 
+data MediumType = Photo | Video | TimeLapse | TimeLapseVideo | Burst
+  deriving (Show, Read, Eq)
+
+instance ToJSON MediumType where
+  toJSON = J.String . T.pack . show
+
+instance FromJSON MediumType where
+  parseJSON (J.String x) = pure . read . T.unpack $ x
+  parseJSON invalid      = typeMismatch "Response" invalid
+
+data ReadyToViewType = ViewReady | ViewFailure | ViewLoading
+                     | ViewRegistered | ViewTranscoding | ViewProcessing | ViewUploading
+  deriving (Show, Read, Eq)
+
+instance ToJSON ReadyToViewType where
+  toJSON = J.String . T.pack . fmap toLower . drop 4 . show
+
+instance FromJSON ReadyToViewType where
+  parseJSON (J.String s) = pure . read . trans . T.unpack $ s
+    where trans (x:xs) = "View" <> (toUpper x : xs)
+          trans []     = error "empty ready to view type"
+  parseJSON invalid      = typeMismatch "Response" invalid
+
 data Medium = Medium {
   _medium_id              :: MediumID,
   _medium_camera_model    :: Maybe String,
@@ -85,9 +110,9 @@ data Medium = Medium {
   _medium_created_at      :: UTCTime,
   _medium_file_size       :: Maybe Int,
   _medium_moments_count   :: Int,
-  _medium_ready_to_view   :: String,
+  _medium_ready_to_view   :: ReadyToViewType,
   _medium_source_duration :: Maybe String,
-  _medium_type            :: String,
+  _medium_type            :: MediumType,
   _medium_token           :: String,
   _medium_width           :: Maybe Int,
   _medium_height          :: Maybe Int
