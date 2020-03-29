@@ -137,8 +137,8 @@ instance FromJSON Listing where
 list :: (HasGoProAuth m, MonadIO m) => Int -> Int -> m ([Medium], PageInfo)
 list psize page = do
   r <- jgetAuth ("https://api.gopro.com/media/search?fields=captured_at,created_at,file_size,id,moments_count,ready_to_view,source_duration,type,token,width,height,camera_model&order_by=created_at&per_page=" <> show psize <> "&page=" <> show page)
-  pure $ (r ^.. media . folded,
-          r ^. pages)
+  pure (r ^.. media . folded,
+        r ^. pages)
 
 -- | List all media.
 listAll :: (HasGoProAuth m, MonadIO m) => m [Medium]
@@ -146,8 +146,7 @@ listAll = listWhile (const True)
 
 -- | List all media while returned batches pass the given predicate.
 listWhile :: (HasGoProAuth m, MonadIO m) => ([Medium] -> Bool) -> m [Medium]
-listWhile f = do
-  Map.elems <$> dig 0 mempty
+listWhile f = Map.elems <$> dig 0 mempty
     where
       dig n m = do
         (ms, _) <- list 100 n

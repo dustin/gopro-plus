@@ -92,15 +92,14 @@ data Env m = Env {
 
 -- | List all media in uploading state.
 listUploading :: (HasGoProAuth m, MonadIO m) => m [Medium]
-listUploading = do
-  filter (\Medium{..} -> _medium_ready_to_view == "uploading") . fst <$> list 30 1
+listUploading = filter (\Medium{..} -> _medium_ready_to_view == "uploading") . fst <$> list 30 1
 
 -- | Run an Uploader monad to create a single medium and upload the content for it.
 runUpload :: (HasGoProAuth m, MonadFail m, MonadIO m)
           => [FilePath]   -- ^ The list of files to include in the medium.
           -> Uploader m a -- ^ The action to perform.
           -> m a          -- ^ The result of the inner action.
-runUpload fileList a = resumeUpload fileList "" a
+runUpload fileList = resumeUpload fileList ""
 
 -- | Run an Uploader monad for which we already know the MediumID
 -- (i.e., we're resuming an upload we previously began).
@@ -217,7 +216,7 @@ createUpload did part fsize = do
                                                    ("file_size", (T.pack . show) fsize),
                                                    ("part_size", (T.pack . show) chunkSize)]
                & header "Accept" .~  ["application/vnd.gopro.jk.user-uploads+json; version=2.0.0"]
-  upaths <- (jgetWith upopts (T.unpack ("https://api.gopro.com/user-uploads/" <> did)))
+  upaths <- jgetWith upopts (T.unpack ("https://api.gopro.com/user-uploads/" <> did))
   let Just ups = (upaths :: J.Value) ^? key "_embedded" . key "authorizations" . _Array . to V.toList
   pure $ Upload upid (fromJust $ traverse aChunk ups)
 
@@ -282,7 +281,7 @@ markAvailable did = do
 
   _ <- liftIO $ putWith (popts _access_token) (T.unpack ("https://api.gopro.com/derivatives/" <> did)) d2
 
-  now <- liftIO $ getCurrentTime
+  now <- liftIO getCurrentTime
   let done = J.Object (mempty & at "upload_completed_at" ?~ J.toJSON now
                        & at "client_updated_at" ?~ J.toJSON now
                        & at "revision_number" ?~ J.Number 0
