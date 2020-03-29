@@ -63,6 +63,7 @@ import           GoPro.Plus.Auth              (AuthInfo (..), HasGoProAuth (..))
 import           GoPro.Plus.Internal.AuthHTTP
 import           GoPro.Plus.Internal.HTTP
 import           GoPro.Plus.Media             (Medium (..), MediumID,
+                                               MediumType (..),
                                                ReadyToViewType (..), list,
                                                putMedium)
 
@@ -84,7 +85,7 @@ instance HasGoProAuth m => HasGoProAuth (Uploader m) where
 
 data Env m = Env {
   fileList   :: [FilePath],
-  mediumType :: T.Text,
+  mediumType :: MediumType,
   extension  :: T.Text,
   filename   :: String,
   mediumID   :: MediumID,
@@ -114,11 +115,11 @@ resumeUpload fileList@(fp:_) mediumID a =
     mediumType = fileType extension
     logAction _ = pure ()
 
-    fileType "JPG" = "Photo"
-    fileType _     = "Video"
+    fileType "JPG" = Photo
+    fileType _     = Video
 
 -- | Override the detected medium type.
-setMediumType :: Monad m => T.Text -> Uploader m ()
+setMediumType :: Monad m => MediumType -> Uploader m ()
 setMediumType t = modify (\m -> m{mediumType=t})
 
 -- | Set the logging action to report retries (or whatever other
@@ -139,7 +140,7 @@ createMedium = do
   AuthInfo{..} <- goproAuth
   let m1 = J.Object (mempty & at "file_extension" ?~ J.String extension
                      & at "filename" ?~ J.String (T.pack filename)
-                     & at "type" ?~ J.String mediumType
+                     & at "type" ?~ J.toJSON mediumType
                      & at "on_public_profile" ?~ J.Bool False
                      & at "content_title" ?~ J.String (T.pack filename)
                      & at "content_source" ?~ J.String "web_media_library"
