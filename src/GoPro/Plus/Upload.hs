@@ -20,7 +20,7 @@ module GoPro.Plus.Upload (
   -- * Low-level upload parts.
   runUpload, resumeUpload,
   createMedium, createSource, createDerivative, createUpload,
-  completeUpload, uploadChunk, markAvailable,
+  completeUpload, getUpload, uploadChunk, markAvailable,
   -- * Data Types
   UploadID, DerivativeID,
   UploadPart(..), uploadLength, uploadPart, uploadURL,
@@ -208,11 +208,27 @@ createUpload did part fsize = do
                      & at "access_token" ?~ J.String _access_token
                      & at "gopro_user_id" ?~ J.String _resource_owner_id)
   ur <- jpost "https://api.gopro.com/user-uploads" u1
-
   let Just upid = ur ^? key "id" . _String
-      upopts = authOpts _access_token & params .~ [("id", upid),
+  getUpload upid did part fsize
+
+  where
+    popts tok = authOpts tok & header "Accept" .~  ["application/vnd.gopro.jk.user-uploads+json; version=2.0.0"]
+    jpost :: (HasGoProAuth m, MonadIO m) => String -> J.Value -> m J.Value
+    jpost u p = (_access_token <$> goproAuth) >>= \tok -> jpostVal (popts tok) u p
+
+getUpload :: (HasGoProAuth m, MonadIO m)
+          => UploadID
+          -> DerivativeID
+          -> Int
+          -> Int
+          -> Uploader m Upload
+getUpload upid did part fsize = do
+  Env{..} <- get
+  AuthInfo{..} <- goproAuth
+
+  let upopts = authOpts _access_token & params .~ [("id", upid),
                                                    ("page", "1"),
-                                                   ("per_page", "100"),
+                                                   ("per_page", "1000"),
                                                    ("item_number", (T.pack . show) part),
                                                    ("camera_position", "default"),
                                                    ("file_size", (T.pack . show) fsize),
@@ -223,13 +239,8 @@ createUpload did part fsize = do
   pure $ Upload upid (fromJust $ traverse aChunk ups)
 
   where
-    popts tok = authOpts tok & header "Accept" .~  ["application/vnd.gopro.jk.user-uploads+json; version=2.0.0"]
-    jpost :: (HasGoProAuth m, MonadIO m) => String -> J.Value -> m J.Value
-    jpost u p = (_access_token <$> goproAuth) >>= \tok -> jpostVal (popts tok) u p
-
     tInt :: T.Text -> Integer
     tInt = read . T.unpack
-
     aChunk v = liftA3 UploadPart (v ^? key "Content-Length" . _String . to tInt)
                                  (v ^? key "part" . _Integer . to toInteger)
                                  (v ^? key "url" . _String . to T.unpack)
