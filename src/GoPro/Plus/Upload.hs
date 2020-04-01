@@ -245,7 +245,7 @@ uploadChunk fp UploadPart{..} = recoverAll policy $ \r -> do
     hSeek fh AbsoluteSeek ((_uploadPart - 1) * chunkSize)
     void $ putWith defOpts _uploadURL =<< BL.hGet fh (fromIntegral _uploadLength)
 
-    where policy = exponentialBackoff 2000000 <> limitRetries 5
+    where policy = exponentialBackoff 2000000 <> limitRetries 9
           retryMsg a = mconcat ["Retrying upload of ", show fp,
                                 " part ", show _uploadPart, " attempt ", show a]
 
