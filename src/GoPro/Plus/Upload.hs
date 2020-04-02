@@ -226,9 +226,10 @@ getUpload upid did part fsize = do
   Env{..} <- get
   AuthInfo{..} <- goproAuth
 
-  let upopts = authOpts _access_token & params .~ [("id", upid),
+  let pages = (ceiling ((fromIntegral fsize :: Double) / fromIntegral chunkSize)) :: Int
+      upopts = authOpts _access_token & params .~ [("id", upid),
                                                    ("page", "1"),
-                                                   ("per_page", "1000"),
+                                                   ("per_page", (T.pack . show) pages),
                                                    ("item_number", (T.pack . show) part),
                                                    ("camera_position", "default"),
                                                    ("file_size", (T.pack . show) fsize),
