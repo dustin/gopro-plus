@@ -216,11 +216,12 @@ createUpload did part fsize = do
     jpost :: (HasGoProAuth m, MonadIO m) => String -> J.Value -> m J.Value
     jpost u p = (_access_token <$> goproAuth) >>= \tok -> jpostVal (popts tok) u p
 
+-- | Retreive an Upload with the given upload and derivative ID.
 getUpload :: (HasGoProAuth m, MonadIO m)
-          => UploadID
-          -> DerivativeID
-          -> Int
-          -> Int
+          => UploadID      -- ^ ID of the upload to retrieve
+          -> DerivativeID  -- ^ ID of the derivative to which the upload belongs
+          -> Int           -- ^ Part number within the derivative.
+          -> Int           -- ^ Size of this part.
           -> Uploader m Upload
 getUpload upid did part fsize = do
   Env{..} <- get
