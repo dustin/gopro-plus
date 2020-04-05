@@ -48,7 +48,10 @@ data AuthInfo = AuthInfo {
   , _resource_owner_id :: Text
   } deriving(Generic, Show)
 
+-- | A Monad may have a 'HasGoProAuth' instance to indicate it knows
+-- how to authenticate against the GoPro Plus service.
 class Monad m => HasGoProAuth m where
+  -- | Get the GoPro 'AuthInfo' to use.
   goproAuth :: m AuthInfo
 
 instance FromJSON AuthInfo where
@@ -56,6 +59,7 @@ instance FromJSON AuthInfo where
 
 makeLenses ''AuthInfo
 
+-- | Authenticate against the GoPro Plus service.
 authenticate :: MonadIO m
              => String -- ^ Email/username
              -> String -- ^ Password
@@ -76,13 +80,18 @@ refreshAuth AuthInfo{..} =
                              "client_secret" := apiClientSecret,
                              "refresh_token" := _refresh_token]
 
+-- | AuthReader is a convenience type that's useful for doing small
+-- experiments where you don't already have your own Reader or
+-- similar.  e.g., in ghci you might type:
+--
+-- > (m :: Medium) <- withAuth (AuthInfo accessToken 0 "" "") $ medium mediumID
 type AuthReader = ReaderT AuthInfo
 
 instance Monad m => HasGoProAuth (AuthReader m) where
   goproAuth = ask
 
 -- | Convenient function for passing around auth info.  You probably
--- don't want to use this, but it can be convenient when
+-- don't want to uset his, but it can be convenient when
 -- experimenting.
 withAuth :: AuthInfo -> AuthReader m a -> m a
 withAuth = flip runReaderT
