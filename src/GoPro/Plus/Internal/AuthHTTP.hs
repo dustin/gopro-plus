@@ -1,3 +1,5 @@
+{-# OPTIONS_HADDOCK hide, prune, ignore-exports #-}
+
 module GoPro.Plus.Internal.AuthHTTP where
 
 import           Control.Lens

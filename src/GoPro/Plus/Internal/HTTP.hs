@@ -1,3 +1,5 @@
+{-# OPTIONS_HADDOCK hide, prune, ignore-exports #-}
+
 module GoPro.Plus.Internal.HTTP where
 
 import           Control.Lens
