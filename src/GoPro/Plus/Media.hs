@@ -36,6 +36,7 @@ module GoPro.Plus.Media (
   FileStuff(..), files, variations, sprites, sidecar_files,
   FileInfo(..), fileStuff, filename,
   Error(..), error_reason, error_code, error_description, error_id,
+  Moment(..), moment_id, moment_time, moments,
   -- * Low-level Junk
   putMedium
   ) where
@@ -321,3 +322,34 @@ putMedium mid = fmap v . jputAuth (mediumURL mid)
   where
     v :: Value -> ()
     v = const ()
+
+-- | A moment of interestingness in a Medium.
+data Moment = Moment {
+  _moment_id     :: T.Text
+  , _moment_time :: Maybe Int
+  } deriving (Show, Generic)
+
+makeLenses ''Moment
+
+instance FromJSON Moment where
+  parseJSON = genericParseJSON defaultOptions {
+    fieldLabelModifier = dropPrefix "_moment_"
+  }
+
+instance ToJSON Moment where
+  toEncoding = genericToEncoding jsonOpts{ fieldLabelModifier = dropPrefix "_moment_" }
+  toJSON = genericToJSON jsonOpts{ fieldLabelModifier = dropPrefix "_moment_" }
+
+newtype Moments = Moments { unMoments :: [Moment] }
+
+instance FromJSON Moments where
+  parseJSON (Object v) = do
+    o <- v .: "_embedded"
+    m <- o .: "moments"
+    Moments <$> traverse parseJSON (V.toList m)
+
+  parseJSON invalid    = typeMismatch "Response" invalid
+
+-- | Get the moments for the given medium.
+moments :: (HasGoProAuth m, MonadIO m) => MediumID -> m [Moment]
+moments mid = unMoments <$> jgetAuth ("https://api.gopro.com/media/" <> T.unpack mid <> "/moments?fields=time")
