@@ -67,12 +67,13 @@ import           GoPro.Plus.Auth
 import           GoPro.Plus.Internal.AuthHTTP
 import           GoPro.Plus.Internal.HTTP
 
-data PageInfo = PageInfo {
-  _current_page :: Int,
-  _per_page     :: Int,
-  _total_items  :: Int,
-  _total_pages  :: Int
-  } deriving (Generic, Show)
+data PageInfo = PageInfo
+    { _current_page :: Int
+    , _per_page     :: Int
+    , _total_items  :: Int
+    , _total_pages  :: Int
+    }
+    deriving (Generic, Show, Eq)
 
 makeLenses ''PageInfo
 
@@ -81,8 +82,12 @@ instance FromJSON PageInfo where
 
 type MediumID = T.Text
 
-data MediumType = Photo | Video | TimeLapse | TimeLapseVideo | Burst
-  deriving (Show, Read, Eq)
+data MediumType = Photo
+    | Video
+    | TimeLapse
+    | TimeLapseVideo
+    | Burst
+    deriving (Show, Read, Eq)
 
 instance ToJSON MediumType where
   toJSON = J.String . T.pack . show
@@ -91,9 +96,14 @@ instance FromJSON MediumType where
   parseJSON (J.String x) = pure . read . T.unpack $ x
   parseJSON invalid      = typeMismatch "Response" invalid
 
-data ReadyToViewType = ViewReady | ViewFailure | ViewLoading
-                     | ViewRegistered | ViewTranscoding | ViewProcessing | ViewUploading
-  deriving (Show, Read, Eq)
+data ReadyToViewType = ViewReady
+    | ViewFailure
+    | ViewLoading
+    | ViewRegistered
+    | ViewTranscoding
+    | ViewProcessing
+    | ViewUploading
+    deriving (Show, Read, Eq)
 
 instance ToJSON ReadyToViewType where
   toJSON = J.String . T.pack . fmap toLower . drop 4 . show
@@ -104,20 +114,21 @@ instance FromJSON ReadyToViewType where
           trans []     = error "empty ready to view type"
   parseJSON invalid      = typeMismatch "Response" invalid
 
-data Medium = Medium {
-  _medium_id              :: MediumID,
-  _medium_camera_model    :: Maybe String,
-  _medium_captured_at     :: UTCTime,
-  _medium_created_at      :: UTCTime,
-  _medium_file_size       :: Maybe Int,
-  _medium_moments_count   :: Int,
-  _medium_ready_to_view   :: ReadyToViewType,
-  _medium_source_duration :: Maybe String,
-  _medium_type            :: MediumType,
-  _medium_token           :: String,
-  _medium_width           :: Maybe Int,
-  _medium_height          :: Maybe Int
-  } deriving (Generic, Show)
+data Medium = Medium
+    { _medium_id              :: MediumID
+    , _medium_camera_model    :: Maybe String
+    , _medium_captured_at     :: UTCTime
+    , _medium_created_at      :: UTCTime
+    , _medium_file_size       :: Maybe Int
+    , _medium_moments_count   :: Int
+    , _medium_ready_to_view   :: ReadyToViewType
+    , _medium_source_duration :: Maybe String
+    , _medium_type            :: MediumType
+    , _medium_token           :: String
+    , _medium_width           :: Maybe Int
+    , _medium_height          :: Maybe Int
+    }
+    deriving (Generic, Show)
 
 makeLenses ''Medium
 
@@ -144,10 +155,11 @@ fetchThumbnail m = do
   n <- liftIO $ getStdRandom (randomR (1,4))
   proxyAuth (thumbnailURL n m)
 
-data Listing = Listing {
-  _media :: [Medium],
-  _pages :: PageInfo
-  } deriving (Generic, Show)
+data Listing = Listing
+    { _media :: [Medium]
+    , _pages :: PageInfo
+    }
+    deriving (Generic, Show)
 
 makeLenses ''Listing
 
@@ -182,14 +194,15 @@ listWhile f = Map.elems <$> dig 0 mempty
           else pure m'
 
 
-data File = File {
-  _file_camera_position :: String,
-  _file_height          :: Int,
-  _file_width           :: Int,
-  _file_item_number     :: Int,
-  _file_orientation     :: Int,
-  _file_url             :: String
-  } deriving (Generic, Show)
+data File = File
+    { _file_camera_position :: String
+    , _file_height          :: Int
+    , _file_width           :: Int
+    , _file_item_number     :: Int
+    , _file_orientation     :: Int
+    , _file_url             :: String
+    }
+    deriving (Generic, Show)
 
 makeLenses  ''File
 
@@ -198,14 +211,15 @@ instance FromJSON File where
     fieldLabelModifier = dropPrefix "_file_"
     }
 
-data Variation = Variation {
-  _var_height  :: Int,
-  _var_width   :: Int,
-  _var_label   :: String,
-  _var_quality :: String,
-  _var_type    :: String,
-  _var_url     :: String
-  } deriving(Generic, Show)
+data Variation = Variation
+    { _var_height  :: Int
+    , _var_width   :: Int
+    , _var_label   :: String
+    , _var_quality :: String
+    , _var_type    :: String
+    , _var_url     :: String
+    }
+    deriving (Generic, Show)
 
 makeLenses ''Variation
 
@@ -214,11 +228,12 @@ instance FromJSON Variation where
   fieldLabelModifier = dropPrefix "_var_"
   }
 
-data SpriteFrame = SpriteFrame {
-  _frame_count  :: Int,
-  _frame_height :: Int,
-  _frame_width  :: Int
-  } deriving(Generic, Show)
+data SpriteFrame = SpriteFrame
+    { _frame_count  :: Int
+    , _frame_height :: Int
+    , _frame_width  :: Int
+    }
+    deriving (Generic, Show)
 
 makeLenses ''SpriteFrame
 
@@ -227,14 +242,15 @@ instance FromJSON SpriteFrame where
     fieldLabelModifier = dropPrefix "_frame_"
   }
 
-data Sprite = Sprite {
-  _sprite_fps    :: Double,
-  _sprite_frame  :: SpriteFrame,
-  _sprite_height :: Int,
-  _sprite_width  :: Int,
-  _sprite_type   :: String,
-  _sprite_urls   :: [String]
-  } deriving (Generic, Show)
+data Sprite = Sprite
+    { _sprite_fps    :: Double
+    , _sprite_frame  :: SpriteFrame
+    , _sprite_height :: Int
+    , _sprite_width  :: Int
+    , _sprite_type   :: String
+    , _sprite_urls   :: [String]
+    }
+    deriving (Generic, Show)
 
 makeLenses ''Sprite
 
@@ -243,22 +259,24 @@ instance FromJSON Sprite where
     fieldLabelModifier = dropPrefix "_sprite_"
   }
 
-data FileStuff = FileStuff {
-  _files         :: [File],
-  _variations    :: [Variation],
-  _sprites       :: [Sprite],
-  _sidecar_files :: [Value]
-  } deriving (Generic, Show)
+data FileStuff = FileStuff
+    { _files         :: [File]
+    , _variations    :: [Variation]
+    , _sprites       :: [Sprite]
+    , _sidecar_files :: [Value]
+    }
+    deriving (Generic, Show)
 
 makeLenses ''FileStuff
 
 instance FromJSON FileStuff where
   parseJSON = genericParseJSON jsonOpts
 
-data FileInfo = FileInfo {
-  _fileStuff :: FileStuff,
-  _filename  :: String
-  } deriving (Generic, Show)
+data FileInfo = FileInfo
+    { _fileStuff :: FileStuff
+    , _filename  :: String
+    }
+    deriving (Generic, Show)
 
 makeLenses ''FileInfo
 
@@ -278,12 +296,13 @@ dlURL k = "https://api.gopro.com/media/" <> T.unpack k <> "/download"
 retrieve :: (HasGoProAuth m, FromJSON j, MonadIO m) => MediumID -> m j
 retrieve k = jgetAuth (dlURL k)
 
-data Error = Error {
-  _error_reason      :: String,
-  _error_code        :: Int,
-  _error_description :: String,
-  _error_id          :: String
-  } deriving (Generic, Show)
+data Error = Error
+    { _error_reason      :: String
+    , _error_code        :: Int
+    , _error_description :: String
+    , _error_id          :: String
+    }
+    deriving (Generic, Show)
 
 makeLenses ''Error
 
@@ -324,10 +343,11 @@ putMedium mid = fmap v . jputAuth (mediumURL mid)
     v = const ()
 
 -- | A moment of interestingness in a Medium.
-data Moment = Moment {
-  _moment_id     :: T.Text
-  , _moment_time :: Maybe Int
-  } deriving (Show, Generic)
+data Moment = Moment
+    { _moment_id   :: T.Text
+    , _moment_time :: Maybe Int
+    }
+    deriving (Show, Generic)
 
 makeLenses ''Moment
 
