@@ -38,11 +38,8 @@ import           Control.Monad                (void, when)
 import           Control.Monad.Catch          (MonadMask (..))
 import           Control.Monad.Fail           (MonadFail (..))
 import           Control.Monad.IO.Class       (MonadIO (..))
-import           Control.Monad.State          (StateT (..), evalStateT, get,
-                                               gets, lift, modify)
-import           Control.Retry                (RetryStatus (..),
-                                               exponentialBackoff, limitRetries,
-                                               recoverAll)
+import           Control.Monad.State          (StateT (..), evalStateT, get, gets, lift, modify)
+import           Control.Retry                (RetryStatus (..), exponentialBackoff, limitRetries, recoverAll)
 import qualified Data.Aeson                   as J
 import           Data.Aeson.Lens
 import qualified Data.ByteString.Lazy         as BL
@@ -54,17 +51,14 @@ import qualified Data.Vector                  as V
 import           Network.Wreq                 (Options, header, params, putWith)
 import           Prelude                      hiding (fail)
 import           System.FilePath.Posix        (takeExtension, takeFileName)
-import           System.IO                    (IOMode (..), SeekMode (..),
-                                               hSeek, withFile)
+import           System.IO                    (IOMode (..), SeekMode (..), hSeek, withFile)
 import           System.Posix.Files           (fileSize, getFileStatus)
 import           UnliftIO                     (MonadUnliftIO (..))
 
 import           GoPro.Plus.Auth              (AuthInfo (..), HasGoProAuth (..))
 import           GoPro.Plus.Internal.AuthHTTP
 import           GoPro.Plus.Internal.HTTP
-import           GoPro.Plus.Media             (Medium (..), MediumID,
-                                               MediumType (..),
-                                               ReadyToViewType (..), list,
+import           GoPro.Plus.Media             (Medium (..), MediumID, MediumType (..), ReadyToViewType (..), list,
                                                putMedium)
 
 type UploadID = T.Text
@@ -227,7 +221,7 @@ getUpload upid did part fsize = do
   Env{..} <- get
   AuthInfo{..} <- goproAuth
 
-  let pages = (ceiling ((fromIntegral fsize :: Double) / fromIntegral chunkSize)) :: Int
+  let pages = ceiling ((fromIntegral fsize :: Double) / fromIntegral chunkSize) :: Int
       upopts = authOpts _access_token & params .~ [("id", upid),
                                                    ("page", "1"),
                                                    ("per_page", (T.pack . show) pages),
