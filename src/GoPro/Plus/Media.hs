@@ -43,12 +43,8 @@ module GoPro.Plus.Media (
 
 import           Control.Lens
 import           Control.Monad.IO.Class       (MonadIO (..))
-import           Data.Aeson                   (FromJSON (..), Options (..),
-                                               ToJSON (..), Value (..),
-                                               defaultOptions,
-                                               fieldLabelModifier,
-                                               genericParseJSON,
-                                               genericToEncoding, genericToJSON,
+import           Data.Aeson                   (FromJSON (..), Options (..), ToJSON (..), Value (..), defaultOptions,
+                                               fieldLabelModifier, genericParseJSON, genericToEncoding, genericToJSON,
                                                (.:))
 import qualified Data.Aeson                   as J
 import           Data.Aeson.Types             (typeMismatch)
@@ -146,10 +142,12 @@ instance FromJSON Medium where
   parseJSON = genericParseJSON jsonOpts{ fieldLabelModifier = mediumMod}
 
 -- | Get the thumbnail token for a given medium result.
-thumbnailURL :: Int -> Medium -> String
+thumbnailURL :: Int    -- ^ Server ID [1..4]
+             -> Medium -- ^ The Medium whose thumbnail is requested
+             -> String -- ^ A URL to a ~450 pixel wide thumbnail
 thumbnailURL n Medium{_medium_token} = "https://images-0" <> show n <> ".gopro.com/resize/450wwp/" <> _medium_token
 
--- | Fetch thumbnail data for the given medium.
+-- | Fetch a 450px wide thumbnail data for the given medium.
 fetchThumbnail :: (HasGoProAuth m, MonadIO m) => Medium -> m BL.ByteString
 fetchThumbnail m = do
   n <- liftIO $ getStdRandom (randomR (1,4))
@@ -172,7 +170,10 @@ instance FromJSON Listing where
   parseJSON invalid    = typeMismatch "Response" invalid
 
 -- | List a page worth of media.
-list :: (HasGoProAuth m, MonadIO m) => Int -> Int -> m ([Medium], PageInfo)
+list :: (HasGoProAuth m, MonadIO m)
+  => Int -- ^ Number of items per page.
+  -> Int -- ^ Page number (one-based).
+  -> m ([Medium], PageInfo)
 list psize page = do
   r <- jgetAuth ("https://api.gopro.com/media/search?fields=captured_at,created_at,file_size,id,moments_count,ready_to_view,source_duration,type,token,width,height,camera_model&order_by=created_at&per_page=" <> show psize <> "&page=" <> show page)
   pure (r ^.. media . folded,
