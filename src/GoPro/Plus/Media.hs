@@ -38,7 +38,7 @@ module GoPro.Plus.Media (
   Error(..), error_reason, error_code, error_description, error_id,
   Moment(..), moment_id, moment_time, moments,
   -- * Low-level Junk
-  putMedium
+  updateMedium, putMedium
   ) where
 
 import           Control.Lens
@@ -342,6 +342,13 @@ putMedium mid = fmap v . jputAuth (mediumURL mid)
   where
     v :: Value -> ()
     v = const ()
+
+-- | Fetch, modify, and store a medium value.
+updateMedium :: (HasGoProAuth m, MonadIO m, FromJSON j, Putable a)
+             => (j -> a) -- ^ Transformation function.
+             -> MediumID -- ^ Medium to update.
+             -> m ()
+updateMedium f m = (f <$> medium m) >>= putMedium m
 
 -- | A moment of interestingness in a Medium.
 data Moment = Moment
