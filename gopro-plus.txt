@@ -7,7 +7,7 @@
 --   Please see the README on GitHub at
 --   <a>https://github.com/dustin/gopro-plus#readme</a>
 @package gopro-plus
-@version 0.3.0.1
+@version 0.3.0.2
 
 
 -- | GoPro Plus authentication.
@@ -79,7 +79,7 @@ retrieve :: (HasGoProAuth m, FromJSON j, MonadIO m) => MediumID -> m j
 -- | Delete an item.
 delete :: (HasGoProAuth m, MonadIO m) => MediumID -> m [Error]
 
--- | Fetch thumbnail data for the given medium.
+-- | Fetch a 450px wide thumbnail data for the given medium.
 fetchThumbnail :: (HasGoProAuth m, MonadIO m) => Medium -> m ByteString
 data PageInfo
 PageInfo :: Int -> Int -> Int -> Int -> PageInfo
@@ -225,6 +225,9 @@ moment_time :: Lens' Moment (Maybe Int)
 
 -- | Get the moments for the given medium.
 moments :: (HasGoProAuth m, MonadIO m) => MediumID -> m [Moment]
+
+-- | Fetch, modify, and store a medium value.
+updateMedium :: (HasGoProAuth m, MonadIO m, FromJSON j, Putable a) => (j -> a) -> MediumID -> m ()
 
 -- | Put a Medium. It's probably best to get a raw JSON Value and update it
 --   in place.
