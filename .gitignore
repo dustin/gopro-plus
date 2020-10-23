@@ -1,4 +1,3 @@
-.stack-work/
-gopro-plus.cabal
 *~
+.stack-work/
 /stack.yaml.lock
