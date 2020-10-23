@@ -287,7 +287,7 @@ instance FromJSON Sprite where
   }
 
 data SidecarFile = SidecarFile
-  { _sidecar_fps   :: Int
+  { _sidecar_fps   :: Double
   , _sidecar_label :: String
   , _sidecar_type  :: String
   , _sidecar_head  :: String
