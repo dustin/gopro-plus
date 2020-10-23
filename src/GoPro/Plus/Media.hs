@@ -26,13 +26,15 @@ module GoPro.Plus.Media (
   medium_ready_to_view, medium_source_duration, medium_type,
   medium_token, medium_width, medium_height,
   Listing(..), media, pages,
+  HasMediaURL(..), HasMediaLabel(..), HasMediaType(..),
   File(..), file_camera_position, file_height, file_width,
-  file_item_number, file_orientation, file_url,
+  file_item_number, file_orientation, file_head, file_url,
   Variation(..), var_height, var_width, var_label, var_quality,
-  var_type, var_url,
+  var_type, var_head, var_url,
   SpriteFrame(..), frame_count, frame_height, frame_width,
   Sprite(..), sprite_fps, sprite_frame, sprite_height, sprite_width,
-  sprite_type, sprite_urls,
+  sprite_type, sprite_heads, sprite_urls,
+  SidecarFile(..), sidecar_fps, sidecar_label, sidecar_type, sidecar_head, sidecar_url,
   FileStuff(..), files, variations, sprites, sidecar_files,
   FileInfo(..), fileStuff, filename,
   Error(..), error_reason, error_code, error_description, error_id,
@@ -194,6 +196,14 @@ listWhile f = Map.elems <$> dig 0 mempty
           then dig (n + 1) m'
           else pure m'
 
+class HasMediaURL c where
+  media_url :: Lens' c String
+
+class HasMediaLabel c where
+  media_label :: Lens' c String
+
+class HasMediaType c where
+  media_type :: Lens' c String
 
 data File = File
     { _file_camera_position :: String
@@ -201,11 +211,14 @@ data File = File
     , _file_width           :: Int
     , _file_item_number     :: Int
     , _file_orientation     :: Int
+    , _file_head            :: String
     , _file_url             :: String
     }
     deriving (Generic, Show)
 
 makeLenses  ''File
+
+instance HasMediaURL File where media_url = file_url
 
 instance FromJSON File where
   parseJSON = genericParseJSON defaultOptions {
@@ -218,11 +231,16 @@ data Variation = Variation
     , _var_label   :: String
     , _var_quality :: String
     , _var_type    :: String
+    , _var_head    :: String
     , _var_url     :: String
     }
     deriving (Generic, Show)
 
 makeLenses ''Variation
+
+instance HasMediaURL Variation where media_url = var_url
+instance HasMediaLabel Variation where media_label = var_label
+instance HasMediaType Variation where media_type = var_type
 
 instance FromJSON Variation where
   parseJSON = genericParseJSON defaultOptions {
@@ -249,6 +267,7 @@ data Sprite = Sprite
     , _sprite_height :: Int
     , _sprite_width  :: Int
     , _sprite_type   :: String
+    , _sprite_heads  :: [String]
     , _sprite_urls   :: [String]
     }
     deriving (Generic, Show)
@@ -260,11 +279,30 @@ instance FromJSON Sprite where
     fieldLabelModifier = dropPrefix "_sprite_"
   }
 
+data SidecarFile = SidecarFile
+  { _sidecar_fps   :: Int
+  , _sidecar_label :: String
+  , _sidecar_type  :: String
+  , _sidecar_head  :: String
+  , _sidecar_url   :: String
+  } deriving (Generic, Show)
+
+makeLenses ''SidecarFile
+
+instance HasMediaURL SidecarFile where media_url = sidecar_url
+instance HasMediaLabel SidecarFile where media_label = sidecar_label
+instance HasMediaType SidecarFile where media_type = sidecar_type
+
+instance FromJSON SidecarFile where
+  parseJSON = genericParseJSON defaultOptions {
+    fieldLabelModifier = dropPrefix "_sidecar_"
+  }
+
 data FileStuff = FileStuff
     { _files         :: [File]
     , _variations    :: [Variation]
     , _sprites       :: [Sprite]
-    , _sidecar_files :: [Value]
+    , _sidecar_files :: [SidecarFile]
     }
     deriving (Generic, Show)
 
