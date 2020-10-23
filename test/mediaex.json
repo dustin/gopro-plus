@@ -47,7 +47,7 @@
                 "height": 3000,
                 "label": "timelapse_video",
                 "quality": "3000p",
-                "transforms": null,
+                "transforms": ["antishake","horizon"],
                 "type": "mp4",
                 "url": "http://d/",
                 "width": 4000
@@ -57,7 +57,7 @@
                 "height": 1440,
                 "label": "high_res_proxy_mp4",
                 "quality": "1440p",
-                "transforms": null,
+                "transforms": ["proshake", "verizon"],
                 "type": "mp4",
                 "url": "http://e/",
                 "width": 1920

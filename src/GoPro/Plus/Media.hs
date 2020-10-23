@@ -30,7 +30,7 @@ module GoPro.Plus.Media (
   File(..), file_camera_position, file_height, file_width,
   file_item_number, file_orientation, file_head, file_url,
   Variation(..), var_height, var_width, var_label, var_quality,
-  var_type, var_head, var_url,
+  var_type, var_transforms, var_head, var_url,
   SpriteFrame(..), frame_count, frame_height, frame_width,
   Sprite(..), sprite_fps, sprite_frame, sprite_height, sprite_width,
   sprite_type, sprite_heads, sprite_urls,
@@ -226,13 +226,14 @@ instance FromJSON File where
     }
 
 data Variation = Variation
-    { _var_height  :: Int
-    , _var_width   :: Int
-    , _var_label   :: String
-    , _var_quality :: String
-    , _var_type    :: String
-    , _var_head    :: String
-    , _var_url     :: String
+    { _var_height     :: Int
+    , _var_width      :: Int
+    , _var_label      :: String
+    , _var_quality    :: String
+    , _var_transforms :: Maybe [String]
+    , _var_type       :: String
+    , _var_head       :: String
+    , _var_url        :: String
     }
     deriving (Generic, Show)
 

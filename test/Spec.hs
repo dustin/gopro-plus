@@ -41,6 +41,9 @@ testFileInfo = do
   assertEqual (show fs) ["zip", "mp4", "mp4", "mp4"] (
     mconcat [fs ^.. sidecar_files . folded . media_type, fs ^.. variations . folded . media_type])
 
+  assertEqual (show fs) [["antishake", "horizon"],
+                         ["proshake", "verizon"]] (fs ^.. variations . folded . var_transforms . _Just)
+
 
 tests :: [TestTree]
 tests = [
