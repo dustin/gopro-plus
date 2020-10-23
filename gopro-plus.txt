@@ -145,12 +145,13 @@ media_label :: HasMediaLabel c => Lens' c String
 class HasMediaType c
 media_type :: HasMediaType c => Lens' c String
 data File
-File :: String -> Int -> Int -> Int -> Int -> String -> String -> File
+File :: String -> Int -> Int -> Int -> Int -> Maybe [String] -> String -> String -> File
 [_file_camera_position] :: File -> String
 [_file_height] :: File -> Int
 [_file_width] :: File -> Int
 [_file_item_number] :: File -> Int
 [_file_orientation] :: File -> Int
+[_file_transforms] :: File -> Maybe [String]
 [_file_head] :: File -> String
 [_file_url] :: File -> String
 file_camera_position :: Lens' File String
@@ -160,12 +161,14 @@ file_item_number :: Lens' File Int
 file_orientation :: Lens' File Int
 file_head :: Lens' File String
 file_url :: Lens' File String
+file_transforms :: Lens' File (Maybe [String])
 data Variation
-Variation :: Int -> Int -> String -> String -> String -> String -> String -> Variation
+Variation :: Int -> Int -> String -> String -> Maybe [String] -> String -> String -> String -> Variation
 [_var_height] :: Variation -> Int
 [_var_width] :: Variation -> Int
 [_var_label] :: Variation -> String
 [_var_quality] :: Variation -> String
+[_var_transforms] :: Variation -> Maybe [String]
 [_var_type] :: Variation -> String
 [_var_head] :: Variation -> String
 [_var_url] :: Variation -> String
@@ -174,6 +177,7 @@ var_width :: Lens' Variation Int
 var_label :: Lens' Variation String
 var_quality :: Lens' Variation String
 var_type :: Lens' Variation String
+var_transforms :: Lens' Variation (Maybe [String])
 var_head :: Lens' Variation String
 var_url :: Lens' Variation String
 data SpriteFrame
