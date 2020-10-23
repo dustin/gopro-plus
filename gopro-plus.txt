@@ -7,7 +7,7 @@
 --   Please see the README on GitHub at
 --   <a>https://github.com/dustin/gopro-plus#readme</a>
 @package gopro-plus
-@version 0.3.1.1
+@version 0.4.0.0
 
 
 -- | GoPro Plus authentication.
@@ -138,33 +138,43 @@ Listing :: [Medium] -> PageInfo -> Listing
 [_pages] :: Listing -> PageInfo
 media :: Lens' Listing [Medium]
 pages :: Lens' Listing PageInfo
+class HasMediaURL c
+media_url :: HasMediaURL c => Lens' c String
+class HasMediaLabel c
+media_label :: HasMediaLabel c => Lens' c String
+class HasMediaType c
+media_type :: HasMediaType c => Lens' c String
 data File
-File :: String -> Int -> Int -> Int -> Int -> String -> File
+File :: String -> Int -> Int -> Int -> Int -> String -> String -> File
 [_file_camera_position] :: File -> String
 [_file_height] :: File -> Int
 [_file_width] :: File -> Int
 [_file_item_number] :: File -> Int
 [_file_orientation] :: File -> Int
+[_file_head] :: File -> String
 [_file_url] :: File -> String
 file_camera_position :: Lens' File String
 file_height :: Lens' File Int
 file_width :: Lens' File Int
 file_item_number :: Lens' File Int
 file_orientation :: Lens' File Int
+file_head :: Lens' File String
 file_url :: Lens' File String
 data Variation
-Variation :: Int -> Int -> String -> String -> String -> String -> Variation
+Variation :: Int -> Int -> String -> String -> String -> String -> String -> Variation
 [_var_height] :: Variation -> Int
 [_var_width] :: Variation -> Int
 [_var_label] :: Variation -> String
 [_var_quality] :: Variation -> String
 [_var_type] :: Variation -> String
+[_var_head] :: Variation -> String
 [_var_url] :: Variation -> String
 var_height :: Lens' Variation Int
 var_width :: Lens' Variation Int
 var_label :: Lens' Variation String
 var_quality :: Lens' Variation String
 var_type :: Lens' Variation String
+var_head :: Lens' Variation String
 var_url :: Lens' Variation String
 data SpriteFrame
 SpriteFrame :: Int -> Int -> Int -> SpriteFrame
@@ -175,29 +185,43 @@ frame_count :: Lens' SpriteFrame Int
 frame_height :: Lens' SpriteFrame Int
 frame_width :: Lens' SpriteFrame Int
 data Sprite
-Sprite :: Double -> SpriteFrame -> Int -> Int -> String -> [String] -> Sprite
+Sprite :: Double -> SpriteFrame -> Int -> Int -> String -> [String] -> [String] -> Sprite
 [_sprite_fps] :: Sprite -> Double
 [_sprite_frame] :: Sprite -> SpriteFrame
 [_sprite_height] :: Sprite -> Int
 [_sprite_width] :: Sprite -> Int
 [_sprite_type] :: Sprite -> String
+[_sprite_heads] :: Sprite -> [String]
 [_sprite_urls] :: Sprite -> [String]
 sprite_fps :: Lens' Sprite Double
 sprite_frame :: Lens' Sprite SpriteFrame
 sprite_height :: Lens' Sprite Int
 sprite_width :: Lens' Sprite Int
 sprite_type :: Lens' Sprite String
+sprite_heads :: Lens' Sprite [String]
 sprite_urls :: Lens' Sprite [String]
+data SidecarFile
+SidecarFile :: Int -> String -> String -> String -> String -> SidecarFile
+[_sidecar_fps] :: SidecarFile -> Int
+[_sidecar_label] :: SidecarFile -> String
+[_sidecar_type] :: SidecarFile -> String
+[_sidecar_head] :: SidecarFile -> String
+[_sidecar_url] :: SidecarFile -> String
+sidecar_fps :: Lens' SidecarFile Int
+sidecar_label :: Lens' SidecarFile String
+sidecar_type :: Lens' SidecarFile String
+sidecar_head :: Lens' SidecarFile String
+sidecar_url :: Lens' SidecarFile String
 data FileStuff
-FileStuff :: [File] -> [Variation] -> [Sprite] -> [Value] -> FileStuff
+FileStuff :: [File] -> [Variation] -> [Sprite] -> [SidecarFile] -> FileStuff
 [_files] :: FileStuff -> [File]
 [_variations] :: FileStuff -> [Variation]
 [_sprites] :: FileStuff -> [Sprite]
-[_sidecar_files] :: FileStuff -> [Value]
+[_sidecar_files] :: FileStuff -> [SidecarFile]
 files :: Lens' FileStuff [File]
 variations :: Lens' FileStuff [Variation]
 sprites :: Lens' FileStuff [Sprite]
-sidecar_files :: Lens' FileStuff [Value]
+sidecar_files :: Lens' FileStuff [SidecarFile]
 data FileInfo
 FileInfo :: FileStuff -> String -> FileInfo
 [_fileStuff] :: FileInfo -> FileStuff
@@ -248,15 +272,25 @@ instance GHC.Generics.Generic GoPro.Plus.Media.FileInfo
 instance Data.Aeson.Types.FromJSON.FromJSON GoPro.Plus.Media.FileStuff
 instance GHC.Show.Show GoPro.Plus.Media.FileStuff
 instance GHC.Generics.Generic GoPro.Plus.Media.FileStuff
+instance GoPro.Plus.Media.HasMediaURL GoPro.Plus.Media.SidecarFile
+instance GoPro.Plus.Media.HasMediaLabel GoPro.Plus.Media.SidecarFile
+instance GoPro.Plus.Media.HasMediaType GoPro.Plus.Media.SidecarFile
+instance Data.Aeson.Types.FromJSON.FromJSON GoPro.Plus.Media.SidecarFile
+instance GHC.Show.Show GoPro.Plus.Media.SidecarFile
+instance GHC.Generics.Generic GoPro.Plus.Media.SidecarFile
 instance Data.Aeson.Types.FromJSON.FromJSON GoPro.Plus.Media.Sprite
 instance GHC.Show.Show GoPro.Plus.Media.Sprite
 instance GHC.Generics.Generic GoPro.Plus.Media.Sprite
 instance Data.Aeson.Types.FromJSON.FromJSON GoPro.Plus.Media.SpriteFrame
 instance GHC.Show.Show GoPro.Plus.Media.SpriteFrame
 instance GHC.Generics.Generic GoPro.Plus.Media.SpriteFrame
+instance GoPro.Plus.Media.HasMediaURL GoPro.Plus.Media.Variation
+instance GoPro.Plus.Media.HasMediaLabel GoPro.Plus.Media.Variation
+instance GoPro.Plus.Media.HasMediaType GoPro.Plus.Media.Variation
 instance Data.Aeson.Types.FromJSON.FromJSON GoPro.Plus.Media.Variation
 instance GHC.Show.Show GoPro.Plus.Media.Variation
 instance GHC.Generics.Generic GoPro.Plus.Media.Variation
+instance GoPro.Plus.Media.HasMediaURL GoPro.Plus.Media.File
 instance Data.Aeson.Types.FromJSON.FromJSON GoPro.Plus.Media.File
 instance GHC.Show.Show GoPro.Plus.Media.File
 instance GHC.Generics.Generic GoPro.Plus.Media.File
