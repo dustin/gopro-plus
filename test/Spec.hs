@@ -26,9 +26,26 @@ testSearchParser = do
   assertEqual (show l) [Video, Photo] (l ^.. _Just . media . folded . medium_type)
   assertEqual (show l) ["62NzWRrpPXm7o", "EDavpqr4GVe8O"] (l ^.. _Just . media . folded . medium_id)
 
+testFileInfo :: Assertion
+testFileInfo = do
+  fi <- J.decode <$> BL.readFile "test/mediaex.json" :: IO (Maybe FileInfo)
+  assertEqual (show fi) (Just "G0000004.JPG") (fi ^? _Just . filename)
+  let Just fs = fi ^? _Just . fileStuff
+  assertEqual (show fs) ["http://a/"] (fs ^.. files . folded . media_url)
+  assertEqual (show fs) ["http://b/"] (fs ^.. sidecar_files . folded . media_url)
+  assertEqual (show fs) ["http://d/", "http://e/", "http://f/"] (fs ^.. variations . folded . media_url)
+
+  assertEqual (show fs) ["ziplabel", "timelapse_video", "high_res_proxy_mp4", "mp4_low"] (
+    mconcat [fs ^.. sidecar_files . folded . media_label, fs ^.. variations . folded . media_label])
+
+  assertEqual (show fs) ["zip", "mp4", "mp4", "mp4"] (
+    mconcat [fs ^.. sidecar_files . folded . media_type, fs ^.. variations . folded . media_type])
+
+
 tests :: [TestTree]
 tests = [
-    testCase "Parsing" testSearchParser
+    testCase "Parsing" testSearchParser,
+    testCase "FileInfo" testFileInfo
     ]
 
 main :: IO ()
