@@ -10,6 +10,16 @@
                 "transforms": null,
                 "url": "http://a/",
                 "width": 1920
+            },
+            {
+                "camera_position": "default",
+                "head": "http://aprime/",
+                "height": 1440,
+                "item_number": 2,
+                "orientation": 1,
+                "transforms": ["into", "a", "lightpost"],
+                "url": "http://aprime/",
+                "width": 1920
             }
         ],
         "sidecar_files": [

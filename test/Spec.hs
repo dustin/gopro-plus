@@ -31,7 +31,7 @@ testFileInfo = do
   fi <- J.decode <$> BL.readFile "test/mediaex.json" :: IO (Maybe FileInfo)
   assertEqual (show fi) (Just "G0000004.JPG") (fi ^? _Just . filename)
   let Just fs = fi ^? _Just . fileStuff
-  assertEqual (show fs) ["http://a/"] (fs ^.. files . folded . media_url)
+  assertEqual (show fs) ["http://a/", "http://aprime/"] (fs ^.. files . folded . media_url)
   assertEqual (show fs) ["http://b/"] (fs ^.. sidecar_files . folded . media_url)
   assertEqual (show fs) ["http://d/", "http://e/", "http://f/"] (fs ^.. variations . folded . media_url)
 
@@ -43,6 +43,8 @@ testFileInfo = do
 
   assertEqual (show fs) [["antishake", "horizon"],
                          ["proshake", "verizon"]] (fs ^.. variations . folded . var_transforms . _Just)
+
+  assertEqual (show fs) "intoalightpost" (fs ^. files . folded . file_transforms . folded . folded)
 
 
 tests :: [TestTree]

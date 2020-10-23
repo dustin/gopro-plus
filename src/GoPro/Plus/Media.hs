@@ -28,7 +28,7 @@ module GoPro.Plus.Media (
   Listing(..), media, pages,
   HasMediaURL(..), HasMediaLabel(..), HasMediaType(..),
   File(..), file_camera_position, file_height, file_width,
-  file_item_number, file_orientation, file_head, file_url,
+  file_item_number, file_orientation, file_head, file_url, file_transforms,
   Variation(..), var_height, var_width, var_label, var_quality,
   var_type, var_transforms, var_head, var_url,
   SpriteFrame(..), frame_count, frame_height, frame_width,
@@ -211,6 +211,7 @@ data File = File
     , _file_width           :: Int
     , _file_item_number     :: Int
     , _file_orientation     :: Int
+    , _file_transforms      :: Maybe [String]
     , _file_head            :: String
     , _file_url             :: String
     }
