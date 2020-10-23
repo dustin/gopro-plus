@@ -35,6 +35,10 @@ testFileInfo = do
   assertEqual (show fs) ["http://b/"] (fs ^.. sidecar_files . folded . media_url)
   assertEqual (show fs) ["http://d/", "http://e/", "http://f/"] (fs ^.. variations . folded . media_url)
 
+  assertEqual (show fs) ["hhttp://a/", "hhttp://aprime/"] (fs ^.. files . folded . media_head)
+  assertEqual (show fs) ["hhttp://b/"] (fs ^.. sidecar_files . folded . media_head)
+  assertEqual (show fs) ["hhttp://d/", "hhttp://e/", "hhttp://f/"] (fs ^.. variations . folded . media_head)
+
   assertEqual (show fs) ["ziplabel", "timelapse_video", "high_res_proxy_mp4", "mp4_low"] (
     mconcat [fs ^.. sidecar_files . folded . media_label, fs ^.. variations . folded . media_label])
 

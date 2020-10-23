@@ -26,7 +26,7 @@ module GoPro.Plus.Media (
   medium_ready_to_view, medium_source_duration, medium_type,
   medium_token, medium_width, medium_height,
   Listing(..), media, pages,
-  HasMediaURL(..), HasMediaLabel(..), HasMediaType(..),
+  HasMediaURL(..), HasMediaHead(..), HasMediaLabel(..), HasMediaType(..),
   File(..), file_camera_position, file_height, file_width,
   file_item_number, file_orientation, file_head, file_url, file_transforms,
   Variation(..), var_height, var_width, var_label, var_quality,
@@ -199,6 +199,9 @@ listWhile f = Map.elems <$> dig 0 mempty
 class HasMediaURL c where
   media_url :: Lens' c String
 
+class HasMediaHead c where
+  media_head :: Lens' c String
+
 class HasMediaLabel c where
   media_label :: Lens' c String
 
@@ -220,6 +223,7 @@ data File = File
 makeLenses  ''File
 
 instance HasMediaURL File where media_url = file_url
+instance HasMediaHead File where media_head = file_head
 
 instance FromJSON File where
   parseJSON = genericParseJSON defaultOptions {
@@ -241,6 +245,7 @@ data Variation = Variation
 makeLenses ''Variation
 
 instance HasMediaURL Variation where media_url = var_url
+instance HasMediaHead Variation where media_head = var_head
 instance HasMediaLabel Variation where media_label = var_label
 instance HasMediaType Variation where media_type = var_type
 
@@ -292,6 +297,7 @@ data SidecarFile = SidecarFile
 makeLenses ''SidecarFile
 
 instance HasMediaURL SidecarFile where media_url = sidecar_url
+instance HasMediaHead SidecarFile where media_head = sidecar_head
 instance HasMediaLabel SidecarFile where media_label = sidecar_label
 instance HasMediaType SidecarFile where media_type = sidecar_type
 
