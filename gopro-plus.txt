@@ -7,7 +7,7 @@
 --   Please see the README on GitHub at
 --   <a>https://github.com/dustin/gopro-plus#readme</a>
 @package gopro-plus
-@version 0.4.1.0
+@version 0.4.1.1
 
 
 -- | GoPro Plus authentication.
@@ -207,13 +207,13 @@ sprite_type :: Lens' Sprite String
 sprite_heads :: Lens' Sprite [String]
 sprite_urls :: Lens' Sprite [String]
 data SidecarFile
-SidecarFile :: Int -> String -> String -> String -> String -> SidecarFile
-[_sidecar_fps] :: SidecarFile -> Int
+SidecarFile :: Double -> String -> String -> String -> String -> SidecarFile
+[_sidecar_fps] :: SidecarFile -> Double
 [_sidecar_label] :: SidecarFile -> String
 [_sidecar_type] :: SidecarFile -> String
 [_sidecar_head] :: SidecarFile -> String
 [_sidecar_url] :: SidecarFile -> String
-sidecar_fps :: Lens' SidecarFile Int
+sidecar_fps :: Lens' SidecarFile Double
 sidecar_label :: Lens' SidecarFile String
 sidecar_type :: Lens' SidecarFile String
 sidecar_head :: Lens' SidecarFile String
