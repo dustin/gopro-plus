@@ -7,7 +7,7 @@
 --   Please see the README on GitHub at
 --   <a>https://github.com/dustin/gopro-plus#readme</a>
 @package gopro-plus
-@version 0.4.0.0
+@version 0.4.1.0
 
 
 -- | GoPro Plus authentication.
@@ -140,6 +140,8 @@ media :: Lens' Listing [Medium]
 pages :: Lens' Listing PageInfo
 class HasMediaURL c
 media_url :: HasMediaURL c => Lens' c String
+class HasMediaHead c
+media_head :: HasMediaHead c => Lens' c String
 class HasMediaLabel c
 media_label :: HasMediaLabel c => Lens' c String
 class HasMediaType c
@@ -277,6 +279,7 @@ instance Data.Aeson.Types.FromJSON.FromJSON GoPro.Plus.Media.FileStuff
 instance GHC.Show.Show GoPro.Plus.Media.FileStuff
 instance GHC.Generics.Generic GoPro.Plus.Media.FileStuff
 instance GoPro.Plus.Media.HasMediaURL GoPro.Plus.Media.SidecarFile
+instance GoPro.Plus.Media.HasMediaHead GoPro.Plus.Media.SidecarFile
 instance GoPro.Plus.Media.HasMediaLabel GoPro.Plus.Media.SidecarFile
 instance GoPro.Plus.Media.HasMediaType GoPro.Plus.Media.SidecarFile
 instance Data.Aeson.Types.FromJSON.FromJSON GoPro.Plus.Media.SidecarFile
@@ -289,12 +292,14 @@ instance Data.Aeson.Types.FromJSON.FromJSON GoPro.Plus.Media.SpriteFrame
 instance GHC.Show.Show GoPro.Plus.Media.SpriteFrame
 instance GHC.Generics.Generic GoPro.Plus.Media.SpriteFrame
 instance GoPro.Plus.Media.HasMediaURL GoPro.Plus.Media.Variation
+instance GoPro.Plus.Media.HasMediaHead GoPro.Plus.Media.Variation
 instance GoPro.Plus.Media.HasMediaLabel GoPro.Plus.Media.Variation
 instance GoPro.Plus.Media.HasMediaType GoPro.Plus.Media.Variation
 instance Data.Aeson.Types.FromJSON.FromJSON GoPro.Plus.Media.Variation
 instance GHC.Show.Show GoPro.Plus.Media.Variation
 instance GHC.Generics.Generic GoPro.Plus.Media.Variation
 instance GoPro.Plus.Media.HasMediaURL GoPro.Plus.Media.File
+instance GoPro.Plus.Media.HasMediaHead GoPro.Plus.Media.File
 instance Data.Aeson.Types.FromJSON.FromJSON GoPro.Plus.Media.File
 instance GHC.Show.Show GoPro.Plus.Media.File
 instance GHC.Generics.Generic GoPro.Plus.Media.File
