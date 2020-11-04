@@ -3,8 +3,11 @@
 import           Control.Lens
 import qualified Data.Aeson            as J
 import qualified Data.ByteString.Lazy  as BL
+import           Data.Maybe            (fromJust)
 import           Text.RawString.QQ     (r)
 
+import           Generic.Random        (genericArbitrary, uniform)
+import           Test.QuickCheck       ((===))
 import           Test.Tasty
 import           Test.Tasty.HUnit
 import           Test.Tasty.QuickCheck as QC
@@ -50,11 +53,28 @@ testFileInfo = do
 
   assertEqual (show fs) "intoalightpost" (fs ^. files . folded . file_transforms . folded . folded)
 
+instance Arbitrary FileInfo where arbitrary = genericArbitrary uniform
+
+instance Arbitrary FileStuff where arbitrary = genericArbitrary uniform
+
+instance Arbitrary Variation where arbitrary = genericArbitrary uniform
+
+instance Arbitrary SpriteFrame where arbitrary = genericArbitrary uniform
+
+instance Arbitrary SidecarFile where arbitrary = genericArbitrary uniform
+
+instance Arbitrary Sprite where arbitrary = genericArbitrary uniform
+
+instance Arbitrary File where arbitrary = genericArbitrary uniform
+
+propRoundtripFileInfo :: FileInfo -> Property
+propRoundtripFileInfo = fromJust . J.decode . J.encode >>= (===)
 
 tests :: [TestTree]
 tests = [
     testCase "Parsing" testSearchParser,
-    testCase "FileInfo" testFileInfo
+    testCase "FileInfo" testFileInfo,
+    testProperty "FileInfo round tripping" propRoundtripFileInfo
     ]
 
 main :: IO ()

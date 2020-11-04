@@ -43,11 +43,11 @@ module GoPro.Plus.Media (
   updateMedium, putMedium
   ) where
 
-import           Control.Lens
+import           Control.Lens                 hiding ((.=))
 import           Control.Monad.IO.Class       (MonadIO (..))
 import           Data.Aeson                   (FromJSON (..), Options (..), ToJSON (..), Value (..), defaultOptions,
                                                fieldLabelModifier, genericParseJSON, genericToEncoding, genericToJSON,
-                                               (.:))
+                                               object, (.:), (.=))
 import qualified Data.Aeson                   as J
 import           Data.Aeson.Types             (typeMismatch)
 import qualified Data.ByteString.Lazy         as BL
@@ -218,7 +218,7 @@ data File = File
     , _file_head            :: String
     , _file_url             :: String
     }
-    deriving (Generic, Show)
+    deriving (Generic, Eq, Show)
 
 makeLenses  ''File
 
@@ -230,6 +230,10 @@ instance FromJSON File where
     fieldLabelModifier = dropPrefix "_file_"
     }
 
+instance ToJSON File where
+  toEncoding = genericToEncoding jsonOpts{ fieldLabelModifier = dropPrefix "_file_" }
+  toJSON = genericToJSON jsonOpts{ fieldLabelModifier = dropPrefix "_file_" }
+
 data Variation = Variation
     { _var_height     :: Int
     , _var_width      :: Int
@@ -240,7 +244,7 @@ data Variation = Variation
     , _var_head       :: String
     , _var_url        :: String
     }
-    deriving (Generic, Show)
+    deriving (Generic, Eq, Show)
 
 makeLenses ''Variation
 
@@ -254,12 +258,16 @@ instance FromJSON Variation where
   fieldLabelModifier = dropPrefix "_var_"
   }
 
+instance ToJSON Variation where
+  toEncoding = genericToEncoding jsonOpts{ fieldLabelModifier = dropPrefix "_var_" }
+  toJSON = genericToJSON jsonOpts{ fieldLabelModifier = dropPrefix "_var_" }
+
 data SpriteFrame = SpriteFrame
     { _frame_count  :: Int
     , _frame_height :: Int
     , _frame_width  :: Int
     }
-    deriving (Generic, Show)
+    deriving (Generic, Eq, Show)
 
 makeLenses ''SpriteFrame
 
@@ -267,6 +275,10 @@ instance FromJSON SpriteFrame where
   parseJSON = genericParseJSON defaultOptions {
     fieldLabelModifier = dropPrefix "_frame_"
   }
+
+instance ToJSON SpriteFrame where
+  toEncoding = genericToEncoding jsonOpts{ fieldLabelModifier = dropPrefix "_frame_" }
+  toJSON = genericToJSON jsonOpts{ fieldLabelModifier = dropPrefix "_frame_" }
 
 data Sprite = Sprite
     { _sprite_fps    :: Double
@@ -277,7 +289,7 @@ data Sprite = Sprite
     , _sprite_heads  :: [String]
     , _sprite_urls   :: [String]
     }
-    deriving (Generic, Show)
+    deriving (Generic, Eq, Show)
 
 makeLenses ''Sprite
 
@@ -286,13 +298,17 @@ instance FromJSON Sprite where
     fieldLabelModifier = dropPrefix "_sprite_"
   }
 
+instance ToJSON Sprite where
+  toEncoding = genericToEncoding jsonOpts{ fieldLabelModifier = dropPrefix "_sprite_" }
+  toJSON = genericToJSON jsonOpts{ fieldLabelModifier = dropPrefix "_sprite_" }
+
 data SidecarFile = SidecarFile
   { _sidecar_fps   :: Double
   , _sidecar_label :: String
   , _sidecar_type  :: String
   , _sidecar_head  :: String
   , _sidecar_url   :: String
-  } deriving (Generic, Show)
+  } deriving (Generic, Eq, Show)
 
 makeLenses ''SidecarFile
 
@@ -306,24 +322,32 @@ instance FromJSON SidecarFile where
     fieldLabelModifier = dropPrefix "_sidecar_"
   }
 
+instance ToJSON SidecarFile where
+  toEncoding = genericToEncoding jsonOpts{ fieldLabelModifier = dropPrefix "_sidecar_" }
+  toJSON = genericToJSON jsonOpts{ fieldLabelModifier = dropPrefix "_sidecar_" }
+
 data FileStuff = FileStuff
     { _files         :: [File]
     , _variations    :: [Variation]
     , _sprites       :: [Sprite]
     , _sidecar_files :: [SidecarFile]
     }
-    deriving (Generic, Show)
+    deriving (Generic, Eq, Show)
 
 makeLenses ''FileStuff
 
 instance FromJSON FileStuff where
   parseJSON = genericParseJSON jsonOpts
 
+instance ToJSON FileStuff where
+  toEncoding = genericToEncoding jsonOpts{ fieldLabelModifier = dropPrefix "_" }
+  toJSON = genericToJSON jsonOpts{ fieldLabelModifier = dropPrefix "_" }
+
 data FileInfo = FileInfo
     { _fileStuff :: FileStuff
     , _filename  :: String
     }
-    deriving (Generic, Show)
+    deriving (Generic, Eq, Show)
 
 makeLenses ''FileInfo
 
@@ -333,6 +357,9 @@ instance FromJSON FileInfo where
     fs <- parseJSON o
     FileInfo fs <$> v .: "filename"
   parseJSON invalid    = typeMismatch "Response" invalid
+
+instance ToJSON FileInfo where
+  toJSON FileInfo{..} = object ["_embedded" .= _fileStuff, "filename" .= _filename]
 
 dlURL :: MediumID -> String
 dlURL k = "https://api.gopro.com/media/" <> T.unpack k <> "/download"

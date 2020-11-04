@@ -63,6 +63,8 @@ tests:
     - gopro-plus
     - HUnit
     - tasty
+    - QuickCheck
+    - generic-random
     - tasty-hunit
     - tasty-quickcheck
     - raw-strings-qq
