@@ -34,7 +34,7 @@ module GoPro.Plus.Upload (
 
 import           Control.Applicative          (liftA3)
 import           Control.Lens
-import           Control.Monad                (void, when)
+import           Control.Monad                (void, when, zipWithM_)
 import           Control.Monad.Catch          (MonadMask (..))
 import           Control.Monad.Fail           (MonadFail (..))
 import           Control.Monad.IO.Class       (MonadIO (..))
@@ -310,12 +310,12 @@ uploadMedium [] = fail "no files provided"
 uploadMedium fps = runUpload fps $ do
   mid <- createMedium
   did <- createSource (length fps)
-  mapM_ (\(fp,n) -> do
+  zipWithM_ (\fp n -> do
             fsize <- toInteger . fileSize <$> (liftIO . getFileStatus) fp
             Upload{..} <- createUpload did n (fromInteger fsize)
             mapM_ (uploadChunk fp) _uploadParts
             completeUpload _uploadID did n fsize
-        ) $ zip fps [1..]
+        ) fps [1..]
   markAvailable did
 
   pure mid
