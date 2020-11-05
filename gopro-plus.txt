@@ -7,7 +7,7 @@
 --   Please see the README on GitHub at
 --   <a>https://github.com/dustin/gopro-plus#readme</a>
 @package gopro-plus
-@version 0.4.1.1
+@version 0.4.1.2
 
 
 -- | GoPro Plus authentication.
@@ -81,6 +81,8 @@ delete :: (HasGoProAuth m, MonadIO m) => MediumID -> m [Error]
 
 -- | Fetch a 450px wide thumbnail data for the given medium.
 fetchThumbnail :: (HasGoProAuth m, MonadIO m) => Medium -> m ByteString
+
+-- | Pagination info returned from lists.
 data PageInfo
 PageInfo :: Int -> Int -> Int -> Int -> PageInfo
 [_current_page] :: PageInfo -> Int
@@ -91,12 +93,26 @@ current_page :: Lens' PageInfo Int
 per_page :: Lens' PageInfo Int
 total_items :: Lens' PageInfo Int
 total_pages :: Lens' PageInfo Int
+
+-- | GoPro-assigned identifier for an uploaded item.
 type MediumID = Text
+
+-- | Type of Media for a given item.
 data MediumType
+
+-- | a still photo
 Photo :: MediumType
+
+-- | normal video
 Video :: MediumType
+
+-- | a timelapse series of photos
 TimeLapse :: MediumType
+
+-- | a timelapse video
 TimeLapseVideo :: MediumType
+
+-- | a set of photos taken in a burst
 Burst :: MediumType
 data ReadyToViewType
 ViewReady :: ReadyToViewType
@@ -266,6 +282,7 @@ instance Data.Aeson.Types.FromJSON.FromJSON GoPro.Plus.Media.Moments
 instance Data.Aeson.Types.FromJSON.FromJSON GoPro.Plus.Media.Moment
 instance Data.Aeson.Types.ToJSON.ToJSON GoPro.Plus.Media.Moment
 instance GHC.Generics.Generic GoPro.Plus.Media.Moment
+instance GHC.Classes.Eq GoPro.Plus.Media.Moment
 instance GHC.Show.Show GoPro.Plus.Media.Moment
 instance GHC.Show.Show GoPro.Plus.Media.Errors
 instance Data.Aeson.Types.FromJSON.FromJSON GoPro.Plus.Media.Errors
@@ -318,23 +335,31 @@ instance GHC.Show.Show GoPro.Plus.Media.File
 instance GHC.Classes.Eq GoPro.Plus.Media.File
 instance GHC.Generics.Generic GoPro.Plus.Media.File
 instance Data.Aeson.Types.FromJSON.FromJSON GoPro.Plus.Media.Listing
+instance Data.Aeson.Types.ToJSON.ToJSON GoPro.Plus.Media.Listing
 instance GHC.Show.Show GoPro.Plus.Media.Listing
+instance GHC.Classes.Eq GoPro.Plus.Media.Listing
 instance GHC.Generics.Generic GoPro.Plus.Media.Listing
 instance Data.Aeson.Types.ToJSON.ToJSON GoPro.Plus.Media.Medium
 instance Data.Aeson.Types.FromJSON.FromJSON GoPro.Plus.Media.Medium
 instance GHC.Show.Show GoPro.Plus.Media.Medium
+instance GHC.Classes.Eq GoPro.Plus.Media.Medium
 instance GHC.Generics.Generic GoPro.Plus.Media.Medium
 instance GHC.Classes.Eq GoPro.Plus.Media.ReadyToViewType
 instance GHC.Read.Read GoPro.Plus.Media.ReadyToViewType
 instance GHC.Show.Show GoPro.Plus.Media.ReadyToViewType
+instance GHC.Enum.Enum GoPro.Plus.Media.ReadyToViewType
+instance GHC.Enum.Bounded GoPro.Plus.Media.ReadyToViewType
 instance GHC.Classes.Eq GoPro.Plus.Media.MediumType
 instance GHC.Read.Read GoPro.Plus.Media.MediumType
 instance GHC.Show.Show GoPro.Plus.Media.MediumType
+instance GHC.Enum.Enum GoPro.Plus.Media.MediumType
+instance GHC.Enum.Bounded GoPro.Plus.Media.MediumType
 instance Data.Aeson.Types.ToJSON.ToJSON GoPro.Plus.Media.ReadyToViewType
 instance Data.Aeson.Types.FromJSON.FromJSON GoPro.Plus.Media.ReadyToViewType
 instance Data.Aeson.Types.ToJSON.ToJSON GoPro.Plus.Media.MediumType
 instance Data.Aeson.Types.FromJSON.FromJSON GoPro.Plus.Media.MediumType
 instance Data.Aeson.Types.FromJSON.FromJSON GoPro.Plus.Media.PageInfo
+instance Data.Aeson.Types.ToJSON.ToJSON GoPro.Plus.Media.PageInfo
 instance GHC.Classes.Eq GoPro.Plus.Media.PageInfo
 instance GHC.Show.Show GoPro.Plus.Media.PageInfo
 instance GHC.Generics.Generic GoPro.Plus.Media.PageInfo
