@@ -64,6 +64,7 @@ tests:
     - HUnit
     - tasty
     - QuickCheck
+    - quickcheck-instances
     - generic-random
     - tasty-hunit
     - tasty-quickcheck

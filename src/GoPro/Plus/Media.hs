@@ -65,6 +65,7 @@ import           GoPro.Plus.Auth
 import           GoPro.Plus.Internal.AuthHTTP
 import           GoPro.Plus.Internal.HTTP
 
+-- | Pagination info returned from lists.
 data PageInfo = PageInfo
     { _current_page :: Int
     , _per_page     :: Int
@@ -75,17 +76,26 @@ data PageInfo = PageInfo
 
 makeLenses ''PageInfo
 
+dropPrefix :: String -> (String -> String)
+dropPrefix s = drop (length s)
+
 instance FromJSON PageInfo where
   parseJSON = genericParseJSON jsonOpts
 
+instance ToJSON PageInfo where
+  toEncoding = genericToEncoding jsonOpts{ fieldLabelModifier = dropPrefix "_" }
+  toJSON = genericToJSON jsonOpts{ fieldLabelModifier = dropPrefix "_" }
+
+-- | GoPro-assigned identifier for an uploaded item.
 type MediumID = T.Text
 
-data MediumType = Photo
-    | Video
-    | TimeLapse
-    | TimeLapseVideo
-    | Burst
-    deriving (Show, Read, Eq)
+-- | Type of Media for a given item.
+data MediumType = Photo -- ^ a still photo
+    | Video -- ^ normal video
+    | TimeLapse -- ^ a timelapse series of photos
+    | TimeLapseVideo -- ^ a timelapse video
+    | Burst -- ^ a set of photos taken in a burst
+    deriving (Bounded, Enum, Show, Read, Eq)
 
 instance ToJSON MediumType where
   toJSON = J.String . T.pack . show
@@ -101,7 +111,7 @@ data ReadyToViewType = ViewReady
     | ViewTranscoding
     | ViewProcessing
     | ViewUploading
-    deriving (Show, Read, Eq)
+    deriving (Bounded, Enum, Show, Read, Eq)
 
 instance ToJSON ReadyToViewType where
   toJSON = J.String . T.pack . fmap toLower . drop 4 . show
@@ -126,12 +136,9 @@ data Medium = Medium
     , _medium_width           :: Maybe Int
     , _medium_height          :: Maybe Int
     }
-    deriving (Generic, Show)
+    deriving (Generic, Eq, Show)
 
 makeLenses ''Medium
-
-dropPrefix :: String -> (String -> String)
-dropPrefix s = drop (length s)
 
 mediumMod :: String -> String
 mediumMod = dropPrefix "_medium_"
@@ -159,7 +166,7 @@ data Listing = Listing
     { _media :: [Medium]
     , _pages :: PageInfo
     }
-    deriving (Generic, Show)
+    deriving (Generic, Eq, Show)
 
 makeLenses ''Listing
 
@@ -170,6 +177,9 @@ instance FromJSON Listing where
     ms <- traverse parseJSON (V.toList m)
     Listing ms <$> v .: "_pages"
   parseJSON invalid    = typeMismatch "Response" invalid
+
+instance ToJSON Listing where
+  toJSON Listing{..} = object ["_embedded" .= object [ "media" .= _media], "_pages" .= _pages]
 
 -- | List a page worth of media.
 list :: (HasGoProAuth m, MonadIO m)
@@ -428,7 +438,7 @@ data Moment = Moment
     { _moment_id   :: T.Text
     , _moment_time :: Maybe Int
     }
-    deriving (Show, Generic)
+    deriving (Show, Eq, Generic)
 
 makeLenses ''Moment
 

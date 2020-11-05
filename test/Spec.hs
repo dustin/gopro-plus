@@ -1,16 +1,19 @@
-{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE QuasiQuotes      #-}
+{-# LANGUAGE TypeApplications #-}
 
 import           Control.Lens
-import qualified Data.Aeson            as J
-import qualified Data.ByteString.Lazy  as BL
-import           Data.Maybe            (fromJust)
-import           Text.RawString.QQ     (r)
+import qualified Data.Aeson                     as J
+import qualified Data.ByteString.Lazy           as BL
+import           Data.Maybe                     (fromJust)
+import           Text.RawString.QQ              (r)
 
-import           Generic.Random        (genericArbitrary, uniform)
-import           Test.QuickCheck       ((===))
+import           Generic.Random                 (genericArbitrary, uniform)
+import           Test.QuickCheck                (arbitraryBoundedEnum, (===))
+import           Test.QuickCheck.Instances.Text
+import           Test.QuickCheck.Instances.Time
 import           Test.Tasty
 import           Test.Tasty.HUnit
-import           Test.Tasty.QuickCheck as QC
+import           Test.Tasty.QuickCheck          as QC
 
 import           GoPro.Plus.Media
 
@@ -67,14 +70,39 @@ instance Arbitrary Sprite where arbitrary = genericArbitrary uniform
 
 instance Arbitrary File where arbitrary = genericArbitrary uniform
 
-propRoundtripFileInfo :: FileInfo -> Property
-propRoundtripFileInfo = fromJust . J.decode . J.encode >>= (===)
+instance Arbitrary Medium where arbitrary = genericArbitrary uniform
+
+instance Arbitrary Moment where arbitrary = genericArbitrary uniform
+
+instance Arbitrary ReadyToViewType where arbitrary = arbitraryBoundedEnum
+
+instance Arbitrary MediumType where arbitrary = arbitraryBoundedEnum
+
+instance Arbitrary PageInfo where arbitrary = genericArbitrary uniform
+
+instance Arbitrary Listing where arbitrary = genericArbitrary uniform
+
+propRTJSON :: (J.FromJSON j, J.ToJSON j, Eq j, Show j) => j -> Property
+propRTJSON = fromJust . J.decode . J.encode >>= (===)
 
 tests :: [TestTree]
 tests = [
     testCase "Parsing" testSearchParser,
     testCase "FileInfo" testFileInfo,
-    testProperty "FileInfo round tripping" propRoundtripFileInfo
+    testGroup "JSON round tripping" $ [
+        testProperty "FileInfo" (propRTJSON @FileInfo),
+        testProperty "Variation" (propRTJSON @Variation),
+        testProperty "SpriteFrame" (propRTJSON @SpriteFrame),
+        testProperty "SidecarFile" (propRTJSON @SidecarFile),
+        testProperty "Sprite" (propRTJSON @Sprite),
+        testProperty "File" (propRTJSON @File),
+        testProperty "MediumType" (propRTJSON @MediumType),
+        testProperty "ReadyToViewType" (propRTJSON @ReadyToViewType),
+        testProperty "Medium" (propRTJSON @Medium),
+        testProperty "Moment" (propRTJSON @Moment),
+        testProperty "Listing" (propRTJSON @Listing),
+        testProperty "PageInfo" (propRTJSON @PageInfo)
+        ]
     ]
 
 main :: IO ()
