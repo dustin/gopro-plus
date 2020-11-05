@@ -58,7 +58,13 @@ testFileInfo = do
 
 instance Arbitrary FileInfo where arbitrary = genericArbitrary uniform
 
-instance Arbitrary FileStuff where arbitrary = genericArbitrary uniform
+instance Arbitrary FileStuff where
+  arbitrary = do
+    _files <- vector =<< choose (0,3)
+    _variations <- vector =<< choose (0,3)
+    _sprites <- vector =<< choose (0,3)
+    _sidecar_files <- vector =<< choose (0,3)
+    pure FileStuff{..}
 
 instance Arbitrary Variation where arbitrary = genericArbitrary uniform
 
