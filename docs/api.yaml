@@ -1,0 +1,765 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0-oas3
+  title: GoPro-Plus API
+  description: The API surface of the GoPro Plus service (reverse-engineered).
+  contact:
+    name: Dustin
+    email: dustin@spy.net
+    url: https://github.com/dustin/gopro-api
+securityDefinitions:
+  password:
+    type: oauth2
+    tokenUrl: 'https://api.gopro.com/v1/oauth2/token'
+    flow: password
+    scopes:
+      root: things
+      'root:channels': things
+      public: things
+      me: things
+      upload: things
+      media_library_beta: things
+      live: things
+
+servers:
+  - url: https://api.gopro.com/media
+    description: GoPro Plus endpoint
+
+security:
+  - password:
+      - root
+      - 'root:channels'
+      - public
+      - me
+      - upload
+      - media_library_beta
+      - live
+paths:
+  /media/search:
+    get:
+      summary: Search/list all media items.
+      parameters:
+        - name: fields
+          in: query
+          required: true
+          description: The list of fields to return (see the medium
+            object for a field list)
+          schema:
+            type: string
+        - name: order_by
+          in: query
+          required: true
+          description: Field to sort by.
+          schema:
+            type: string
+        - name: per_page
+          in: query
+          required: true
+          description: How many items to return per page.
+          schema:
+            type: integer
+        - name: page
+          in: query
+          required: true
+          description: Page number to return.
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The list of errors (if any) describing deletion failures.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _pages:
+                    $ref: "#/schemas/pageinfo"
+                  _embedded:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        errors:
+                          $ref: "#/schemas/error"
+                        media:
+                          type: array
+                          items:
+                            $ref: "#/schemas/medium"
+  /media/{medium_id}:
+    get:
+      summary: "Get data for a given medium ID"
+      parameters:
+        - name: medium_id
+          in: path
+          required: true
+          description: "The medium ID to look up"
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/schemas/medium"
+
+    put:
+      summary: "Update a medium in place."
+      parameters:
+        - name: medium_id
+          in: path
+          required: true
+          description: "The medium ID to update"
+          schema:
+            type: string
+
+      requestBody:
+        description: An updated medium value to modify in place.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/schemas/medium"
+      responses:
+        '204':
+          description: OK
+
+  /media:
+    delete:
+      summary: "Delete one or more items"
+      parameters:
+        - name: ids
+          in: query
+          required: true
+          description: "The comma-separated list of media IDs to delete"
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/schemas/error"
+
+    post:
+      summary: Create a new medium
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                file_extension:
+                  type: string
+                  example: "MP4"
+                filename:
+                  type: string
+                type:
+                  type: string
+                  enum:
+                    - "photo"
+                    - "video"
+                    - "timelapse"
+                    - "timelapse_video"
+                    - "burst"
+                on_public_profile:
+                  type: boolean
+                content_title:
+                  type: string
+                content_source:
+                  example: "web_media_library"
+                  type: string
+                access_token:
+                  type: string
+                gopro_user_id:
+                  type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/schemas/medium"
+      description: See [upload process documentation](https://github.com/dustin/gopro-plus/wiki/GoPro-Plus-API) for a more detailed description of sequence of calls required to upload media.
+
+  /media/{medium_id}/download:
+    get:
+      summary: "Get download URLs for variants"
+      parameters:
+        - name: medium_id
+          in: path
+          required: true
+          description: "The medium ID for which to find download URls"
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/schemas/fileinfo"
+
+  /media/{medium_id}/moments:
+    get:
+      summary: "Get moments for a medium"
+      parameters:
+        - name: medium_id
+          in: path
+          required: true
+          description: "The medium ID for which to find download URls"
+          schema:
+            type: string
+        - name: fields
+          in: query
+          required: true
+          description: "The fields to return (typically just time)"
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _pages:
+                    $ref: "#/schemas/pageinfo"
+                  _embedded:
+                    type: object
+                    properties:
+                      moments:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            moment:
+                              type: object
+                              properties:
+                                id:
+                                  type: string
+                                time:
+                                  type: integer
+                                  description: moment offset
+
+  /derivatives:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                medium_id:
+                  type: string
+                file_extension:
+                  type: string
+                  example: "MP4"
+                type:
+                  type: string
+                label:
+                  type: string
+                available:
+                  type: boolean
+                item_count:
+                  type: integer
+                camera_positions:
+                  type: string
+                  example: "default"
+                on_public_profile:
+                  type: boolean
+                access_token:
+                  type: string
+                gopro_user_id:
+                  type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/schemas/derivative"
+
+
+  /moments:
+    post:
+      summary: "Create new moments."
+      requestBody:
+        description: A complete moment.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                medium_id:
+                  type: string
+                time:
+                  type: array
+                  items:
+                    type: number
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  medium_id:
+                    type: string
+                  time:
+                    type: array
+                    items:
+                      type: number
+
+  /collections:
+    get:
+      summary: "Get a list of shares"
+      parameters:
+        - name: fields
+          in: query
+          required: true
+          description: The list of fields to return (e.g., type,title,media_count,created_at,medium_token)
+          schema:
+            type: string
+        - name: per_page
+          in: query
+          required: true
+          description: How many items to return per page.
+          schema:
+            type: integer
+        - name: page
+          in: query
+          required: true
+          description: Page number to return.
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _pages:
+                    $ref: "#/schemas/pageinfo"
+                  _embedded:
+                    type: object
+                    properties:
+                      collections:
+                        type: array
+                        items:
+                          $ref: "#/schemas/collection"
+
+    post:
+      summary: "Create a new collection."
+      requestBody:
+        description: A collection title.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+      responses:
+        '209':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/schemas/collection"
+
+
+  /collections/{collection_id}:
+    get:
+      summary: "Get a collection."
+      parameters:
+        - name: collection_id
+          in: path
+          required: true
+          description: "The collection ID to update"
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/schemas/collection"
+
+    put:
+      summary: "Update a collection."
+      parameters:
+        - name: collection_id
+          in: path
+          required: true
+          description: "The collection ID to update"
+          schema:
+            type: string
+
+      requestBody:
+        description: An object representing the fields to update.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                media_ids:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '204':
+          description: OK
+
+    delete:
+      summary: "Delete a collection"
+      parameters:
+        - name: collection_id
+          in: path
+          required: true
+          description: "The collection ID to delete"
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+
+  /devices/my-devices:
+    get:
+      summary: "List all your GoPro devices."
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    serial_number:
+                      type: string
+                    friendly_name:
+                      type: string
+                    model_name:
+                      type: string
+                    current_software_version:
+                      type: string
+                    model_info:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                        model_string:
+                          type: string
+                        serial:
+                          type: string
+                        meta:
+                          type: object
+                          properties:
+                            external_name:
+                              type: string
+                            image_url:
+                              type: string
+                            shop_url:
+                              type: string
+                            release_date:
+                              type: string
+                            product_url_name:
+                              type: string
+                    strong:
+                      type: boolean
+
+schemas:
+  error:
+    type: array
+    items:
+      type: object
+      properties:
+        reason:
+          type: string
+        code:
+          type: integer
+        description:
+          type: string
+        id:
+          type: string
+  pageinfo:
+    type: object
+    properties:
+      current_page:
+        type: integer
+      per_page:
+        type: integer
+      total_items:
+        type: integer
+      total_pages:
+        type: integer
+  fileinfo:
+    type: object
+    properties:
+      filename:
+        type: string
+      _embedded:
+        type: object
+        properties:
+          files:
+            type: array
+            items:
+              type: object
+              properties:
+                camera_position:
+                  type: string
+                head:
+                  type: string
+                url:
+                  type: string
+                height:
+                  type: integer
+                width:
+                  type: integer
+                item_number:
+                  type: integer
+                orientation:
+                  type: integer
+                transforms:
+                  type: array
+                  items:
+                    type: string
+          variations:
+            type: array
+            items:
+              type: object
+              properties:
+                label:
+                  type: string
+                head:
+                  type: string
+                url:
+                  type: string
+                height:
+                  type: integer
+                width:
+                  type: integer
+                quality:
+                  type: string
+                type:
+                  type: string
+                transforms:
+                  type: array
+                  items:
+                    type: string
+          sidecar_files:
+            type: array
+            items:
+              type: object
+              properties:
+                label:
+                  type: string
+                fps:
+                  type: integer
+                head:
+                  type: string
+                url:
+                  type: string
+                type:
+                  type: string
+          sprites:
+            type: array
+            items:
+              type: object
+              properties:
+                frame:
+                  type: object
+                  properties:
+                    count:
+                      type: integer
+                    width:
+                      type: integer
+                    height:
+                      type: integer
+                fps:
+                  type: integer
+                heads:
+                  type: array
+                  items:
+                    type: string
+                urls:
+                  type: array
+                  items:
+                    type: string
+                height:
+                  type: integer
+                width:
+                  type: integer
+                type:
+                  type: string
+                transforms:
+                  type: array
+                  items:
+                    type: string
+
+  medium:
+    type: object
+    properties:
+      captured_at:
+        type: string
+        format: date-time
+      content_title:
+        type: string
+      content_type:
+        type: string
+      created_at:
+        type: string
+        format: date-time
+      gopro_user_id:
+        type: string
+      file_size:
+        type: integer
+      height:
+        type: integer
+      fov:
+        type: string
+      id:
+        type: string
+      moments_count:
+        type: integer
+      on_public_profile:
+        type: boolean
+      orientation:
+        type: integer
+      play_as:
+        type: string
+      ready_to_edit:
+        type: boolean
+      ready_to_view:
+        type: string
+        enum:
+          - "ready"
+          - "failure"
+          - "loading"
+          - "registered"
+          - "transcoding"
+          - "processing"
+          - "uploading"
+      resolution:
+        type: string
+      source_duration:
+        type: string
+      token:
+        type: string
+      type:
+        type: string
+        enum:
+          - "photo"
+          - "video"
+          - "timelapse"
+          - "timelapse_video"
+          - "burst"
+      width:
+        type: integer
+
+  collection:
+    type: object
+    properties:
+      created_at:
+        type: string
+        format: date-time
+      updatedat:
+        type: string
+        format: date-time
+      id:
+        type: string
+      media_count:
+        type: integer
+      medium_token:
+        type: string
+      title:
+        type: string
+      type:
+        type: string
+      revision_number:
+        type: integer
+      livestream_collection:
+        type: boolean
+      client_updated_at:
+        type: string
+        format: date-time
+      medium_ids:
+        type: array
+        items:
+          type: string
+
+  derivative:
+    type: object
+    properties:
+      available:
+        type: boolean
+      bitrate:
+        type: string
+      camera_positions:
+        type: string
+      created_at:
+        type: string
+        format: date-time
+      file_extension:
+        type: string
+        example: "jpg"
+      file_size:
+        type: string
+      fps:
+        type: string
+      gopro_user_id:
+        type: string
+      gumi:
+        type: string
+      height:
+        type: integer
+      is_public:
+        type: boolean
+      item_count:
+        type: integer
+      label:
+        type: string
+      medium_id:
+        type: string
+      profile:
+        type: string
+      transcode_source:
+        type: string
+      type:
+        type: string
+        example: "Source"
+      updated_at:
+        type: string
+        format: date-time
+      width:
+        type: integer
+      id:
+        type: string
