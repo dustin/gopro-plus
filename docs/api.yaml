@@ -286,6 +286,149 @@ paths:
               schema:
                 $ref: "#/schemas/derivative"
 
+  /user-uploads:
+    post:
+      summary: "Create an upload of a part of a derivative."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                derivative_id:
+                  type: string
+                camera_position:
+                  type: string
+                  example: "default"
+                item_number:
+                  type: integer
+                access_token:
+                  type: string
+                gopro_user_id:
+                  type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    description: "New upload ID"
+                    type: string
+
+  /user-uploads/{derivative_id}:
+    put:
+      summary: "Mark an upload as complete."
+      parameters:
+        - name: derivative_id
+          in: path
+          required: true
+          description: "The derivative in question"
+          schema:
+            type: string
+
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                page:
+                  description: "Page number"
+                  example: 1
+                  type: integer
+                per_page:
+                  description: "How many results per page"
+                  example: 1
+                  type: integer
+                item_number:
+                  description: "Part number of the upload to look up"
+                  type: integer
+                camera_position:
+                  example: "default"
+                  description: "Camera position of the upload to look up"
+                  type: string
+                file_size:
+                  example: "default"
+                  description: "Size of the file being uploaded"
+                  type: integer
+                part_size:
+                  example: "default"
+                  description: "Chunk size for upload parts"
+                  type: integer
+      responses:
+        '204':
+          description: OK
+
+    get:
+      summary: "Get active uploads for a derivative."
+      parameters:
+        - name: derivative_id
+          in: path
+          required: true
+          description: "The derivative in question"
+          schema:
+            type: string
+        - name: page
+          in: query
+          required: true
+          description: "Page number"
+          example: 1
+          schema:
+            type: integer
+        - name: per_page
+          in: query
+          required: true
+          description: "How many results per page"
+          example: 1
+          schema:
+            type: integer
+        - name: item_number
+          in: query
+          required: true
+          description: "Part number of the upload to look up"
+          schema:
+            type: integer
+        - name: camera_position
+          in: query
+          required: true
+          example: "default"
+          description: "Camera position of the upload to look up"
+          schema:
+            type: string
+        - name: file_size
+          in: query
+          required: true
+          example: "default"
+          description: "Size of the file being uploaded"
+          schema:
+            type: integer
+        - name: part_size
+          in: query
+          required: true
+          example: "default"
+          description: "Chunk size for upload parts"
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Content-Length:
+                      type: string
+                    part:
+                      type: integer
+                    url:
+                      type: string
 
   /moments:
     post:
