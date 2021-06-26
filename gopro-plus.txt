@@ -7,7 +7,7 @@
 --   Please see the README on GitHub at
 --   <a>https://github.com/dustin/gopro-plus#readme</a>
 @package gopro-plus
-@version 0.4.1.3
+@version 0.5.0.0
 
 
 -- | GoPro Plus authentication.
@@ -281,10 +281,10 @@ putMedium :: (HasGoProAuth m, MonadIO m, Putable a) => MediumID -> a -> m ()
 instance Data.Aeson.Types.FromJSON.FromJSON GoPro.Plus.Media.Moments
 instance Data.Aeson.Types.FromJSON.FromJSON GoPro.Plus.Media.Moment
 instance Data.Aeson.Types.ToJSON.ToJSON GoPro.Plus.Media.Moment
+instance GHC.Show.Show GoPro.Plus.Media.Errors
 instance GHC.Generics.Generic GoPro.Plus.Media.Moment
 instance GHC.Classes.Eq GoPro.Plus.Media.Moment
 instance GHC.Show.Show GoPro.Plus.Media.Moment
-instance GHC.Show.Show GoPro.Plus.Media.Errors
 instance Data.Aeson.Types.FromJSON.FromJSON GoPro.Plus.Media.Errors
 instance Data.Aeson.Types.FromJSON.FromJSON GoPro.Plus.Media.Error
 instance GHC.Show.Show GoPro.Plus.Media.Error
@@ -341,19 +341,19 @@ instance GHC.Classes.Eq GoPro.Plus.Media.Listing
 instance GHC.Generics.Generic GoPro.Plus.Media.Listing
 instance Data.Aeson.Types.ToJSON.ToJSON GoPro.Plus.Media.Medium
 instance Data.Aeson.Types.FromJSON.FromJSON GoPro.Plus.Media.Medium
-instance GHC.Show.Show GoPro.Plus.Media.Medium
-instance GHC.Classes.Eq GoPro.Plus.Media.Medium
-instance GHC.Generics.Generic GoPro.Plus.Media.Medium
-instance GHC.Classes.Eq GoPro.Plus.Media.ReadyToViewType
-instance GHC.Read.Read GoPro.Plus.Media.ReadyToViewType
-instance GHC.Show.Show GoPro.Plus.Media.ReadyToViewType
-instance GHC.Enum.Enum GoPro.Plus.Media.ReadyToViewType
-instance GHC.Enum.Bounded GoPro.Plus.Media.ReadyToViewType
 instance GHC.Classes.Eq GoPro.Plus.Media.MediumType
 instance GHC.Read.Read GoPro.Plus.Media.MediumType
 instance GHC.Show.Show GoPro.Plus.Media.MediumType
 instance GHC.Enum.Enum GoPro.Plus.Media.MediumType
 instance GHC.Enum.Bounded GoPro.Plus.Media.MediumType
+instance GHC.Classes.Eq GoPro.Plus.Media.ReadyToViewType
+instance GHC.Read.Read GoPro.Plus.Media.ReadyToViewType
+instance GHC.Show.Show GoPro.Plus.Media.ReadyToViewType
+instance GHC.Enum.Enum GoPro.Plus.Media.ReadyToViewType
+instance GHC.Enum.Bounded GoPro.Plus.Media.ReadyToViewType
+instance GHC.Show.Show GoPro.Plus.Media.Medium
+instance GHC.Classes.Eq GoPro.Plus.Media.Medium
+instance GHC.Generics.Generic GoPro.Plus.Media.Medium
 instance Data.Aeson.Types.ToJSON.ToJSON GoPro.Plus.Media.ReadyToViewType
 instance Data.Aeson.Types.FromJSON.FromJSON GoPro.Plus.Media.ReadyToViewType
 instance Data.Aeson.Types.ToJSON.ToJSON GoPro.Plus.Media.MediumType
@@ -369,15 +369,15 @@ instance GHC.Generics.Generic GoPro.Plus.Media.PageInfo
 module GoPro.Plus.Upload
 
 -- | Convenience action to upload a single medium.
-uploadMedium :: (HasGoProAuth m, MonadMask m, MonadFail m, MonadIO m) => [FilePath] -> m MediumID
+uploadMedium :: (HasGoProAuth m, MonadMask m, MonadIO m) => NonEmpty FilePath -> m MediumID
 
 -- | Run an Uploader monad to create a single medium and upload the content
 --   for it.
-runUpload :: (HasGoProAuth m, MonadFail m, MonadIO m) => [FilePath] -> Uploader m a -> m a
+runUpload :: (HasGoProAuth m, MonadIO m) => NonEmpty FilePath -> Uploader m a -> m a
 
 -- | Run an Uploader monad for which we already know the MediumID (i.e.,
 --   we're resuming an upload we previously began).
-resumeUpload :: (HasGoProAuth m, MonadFail m, MonadIO m) => [FilePath] -> MediumID -> Uploader m a -> m a
+resumeUpload :: (HasGoProAuth m, MonadIO m) => NonEmpty FilePath -> MediumID -> Uploader m a -> m a
 
 -- | Create a new medium (e.g., video, photo, etc...) and return its ID.
 createMedium :: (HasGoProAuth m, MonadIO m) => Uploader m MediumID
