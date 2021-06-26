@@ -1,13 +1,13 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.33.0.
+-- This file has been generated from package.yaml by hpack version 0.34.4.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e57dbf9536773374bac2998b86c4f2901d748a645a488573462dfd7125d964c9
+-- hash: a792185c3e5dd0c5412e961456957e6810fcbcd183932f7db7743034baa59650
 
 name:           gopro-plus
-version:        0.4.1.3
+version:        0.5.0.0
 synopsis:       GoPro Plus Client API.
 description:    Please see the README on GitHub at <https://github.com/dustin/gopro-plus#readme>
 category:       Web
@@ -38,7 +38,10 @@ library
       Paths_gopro_plus
   hs-source-dirs:
       src
-  default-extensions: OverloadedStrings RecordWildCards NamedFieldPuns
+  default-extensions:
+      OverloadedStrings
+      RecordWildCards
+      NamedFieldPuns
   ghc-options: -Wall
   build-depends:
       aeson
@@ -70,7 +73,10 @@ test-suite gopro-plus-test
       Paths_gopro_plus
   hs-source-dirs:
       test
-  default-extensions: OverloadedStrings RecordWildCards NamedFieldPuns
+  default-extensions:
+      OverloadedStrings
+      RecordWildCards
+      NamedFieldPuns
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       HUnit

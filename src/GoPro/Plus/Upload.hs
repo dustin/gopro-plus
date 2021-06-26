@@ -36,7 +36,6 @@ import           Control.Applicative          (liftA3)
 import           Control.Lens
 import           Control.Monad                (void, when, zipWithM_)
 import           Control.Monad.Catch          (MonadMask (..))
-import           Control.Monad.Fail           (MonadFail (..))
 import           Control.Monad.IO.Class       (MonadIO (..))
 import           Control.Monad.State          (StateT (..), evalStateT, get, gets, lift, modify)
 import           Control.Retry                (RetryStatus (..), exponentialBackoff, limitRetries, recoverAll)
@@ -44,12 +43,13 @@ import qualified Data.Aeson                   as J
 import           Data.Aeson.Lens
 import qualified Data.ByteString.Lazy         as BL
 import           Data.Char                    (toUpper)
+import           Data.List.NonEmpty           (NonEmpty (..))
+import qualified Data.List.NonEmpty           as NE
 import           Data.Maybe                   (fromJust)
 import qualified Data.Text                    as T
 import           Data.Time.Clock.POSIX        (getCurrentTime)
 import qualified Data.Vector                  as V
 import           Network.Wreq                 (Options, header, params, putWith)
-import           Prelude                      hiding (fail)
 import           System.FilePath.Posix        (takeExtension, takeFileName)
 import           System.IO                    (IOMode (..), SeekMode (..), hSeek, withFile)
 import           System.Posix.Files           (fileSize, getFileStatus)
@@ -78,7 +78,7 @@ instance HasGoProAuth m => HasGoProAuth (Uploader m) where
   goproAuth = lift goproAuth
 
 data Env m = Env {
-  fileList   :: [FilePath],
+  fileList   :: NonEmpty FilePath,
   mediumType :: MediumType,
   extension  :: T.Text,
   filename   :: String,
@@ -91,18 +91,16 @@ listUploading :: (HasGoProAuth m, MonadIO m) => m [Medium]
 listUploading = filter (\Medium{..} -> _medium_ready_to_view == ViewUploading) . fst <$> list 30 1
 
 -- | Run an Uploader monad to create a single medium and upload the content for it.
-runUpload :: (HasGoProAuth m, MonadFail m, MonadIO m)
-          => [FilePath]   -- ^ The list of files to include in the medium.
+runUpload :: (HasGoProAuth m, MonadIO m)
+          => NonEmpty FilePath   -- ^ The list of files to include in the medium.
           -> Uploader m a -- ^ The action to perform.
           -> m a          -- ^ The result of the inner action.
 runUpload fileList = resumeUpload fileList ""
 
 -- | Run an Uploader monad for which we already know the MediumID
 -- (i.e., we're resuming an upload we previously began).
-resumeUpload :: (HasGoProAuth m, MonadFail m, MonadIO m) => [FilePath] -> MediumID -> Uploader m a -> m a
-resumeUpload [] _ _ = fail "empty file list"
-resumeUpload fileList@(fp:_) mediumID a =
-  goproAuth >>= \AuthInfo{..} -> evalStateT a Env{..}
+resumeUpload :: (HasGoProAuth m, MonadIO m) => NonEmpty FilePath -> MediumID -> Uploader m a -> m a
+resumeUpload fileList@(fp :| _) mediumID a = evalStateT a Env{..}
   where
     extension = T.pack . fmap toUpper . drop 1 . takeExtension $ filename
     filename = takeFileName fp
@@ -194,7 +192,6 @@ createUpload :: (HasGoProAuth m, MonadIO m)
              -> Int          -- ^ The size of the file being uploaded in this part.
              -> Uploader m Upload
 createUpload did part fsize = do
-  Env{..} <- get
   AuthInfo{..} <- goproAuth
   let u1 = J.Object (mempty & at "derivative_id" ?~ J.String did
                      & at "camera_position" ?~ J.String "default"
@@ -218,7 +215,6 @@ getUpload :: (HasGoProAuth m, MonadIO m)
           -> Int           -- ^ Size of this part.
           -> Uploader m Upload
 getUpload upid did part fsize = do
-  Env{..} <- get
   AuthInfo{..} <- goproAuth
 
   let pages = ceiling ((fromIntegral fsize :: Double) / fromIntegral chunkSize) :: Int
@@ -264,7 +260,6 @@ completeUpload :: (HasGoProAuth m, MonadIO m)
                -> Integer      -- ^ The size of the file that was uploaded.
                -> Uploader m ()
 completeUpload upid did part fsize = do
-  Env{..} <- get
   AuthInfo{..} <- goproAuth
   let u2 = J.Object (mempty & at "id" ?~ J.String upid
                      & at "item_number" ?~ J.Number (fromIntegral part)
@@ -303,10 +298,9 @@ markAvailable did = do
     popts tok = authOpts tok & header "Accept" .~  ["application/vnd.gopro.jk.user-uploads+json; version=2.0.0"]
 
 -- | Convenience action to upload a single medium.
-uploadMedium :: (HasGoProAuth m, MonadMask m, MonadFail m, MonadIO m)
-             => [FilePath] -- ^ Parts of a single medium to upload (e.g., a video file).
+uploadMedium :: (HasGoProAuth m, MonadMask m, MonadIO m)
+             => NonEmpty FilePath -- ^ Parts of a single medium to upload (e.g., a video file).
              -> m MediumID
-uploadMedium [] = fail "no files provided"
 uploadMedium fps = runUpload fps $ do
   mid <- createMedium
   did <- createSource (length fps)
@@ -315,7 +309,7 @@ uploadMedium fps = runUpload fps $ do
             Upload{..} <- createUpload did n (fromInteger fsize)
             mapM_ (uploadChunk fp) _uploadParts
             completeUpload _uploadID did n fsize
-        ) fps [1..]
+        ) (NE.toList fps) [1..]
   markAvailable did
 
   pure mid
