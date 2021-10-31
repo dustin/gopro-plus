@@ -4,10 +4,10 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a792185c3e5dd0c5412e961456957e6810fcbcd183932f7db7743034baa59650
+-- hash: 68c1e9163a8057cb37b7d179377d24c7517b740d7730613114203d9aaa90fe1e
 
 name:           gopro-plus
-version:        0.5.0.0
+version:        0.6.0.0
 synopsis:       GoPro Plus Client API.
 description:    Please see the README on GitHub at <https://github.com/dustin/gopro-plus#readme>
 category:       Web
@@ -29,6 +29,7 @@ source-repository head
 
 library
   exposed-modules:
+      GoPro.Plus.Arbitrary
       GoPro.Plus.Auth
       GoPro.Plus.Internal.AuthHTTP
       GoPro.Plus.Internal.HTTP
@@ -44,16 +45,19 @@ library
       NamedFieldPuns
   ghc-options: -Wall
   build-depends:
-      aeson
+      QuickCheck
+    , aeson
     , base >=4.7 && <5
     , bytestring
     , containers
     , exceptions
     , filepath
     , generic-deriving
+    , generic-random
     , lens
     , lens-aeson
     , mtl
+    , quickcheck-instances
     , random
     , retry
     , text

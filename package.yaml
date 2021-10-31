@@ -1,5 +1,5 @@
 name:                gopro-plus
-version:             0.5.0.0
+version:             0.6.0.0
 github:              "dustin/gopro-plus"
 license:             BSD3
 author:              "Dustin Sallings"
@@ -40,6 +40,9 @@ dependencies:
 - exceptions
 - unliftio
 - retry
+- quickcheck-instances
+- generic-random
+- QuickCheck
 
 library:
   source-dirs: src
@@ -63,9 +66,6 @@ tests:
     - gopro-plus
     - HUnit
     - tasty
-    - QuickCheck
-    - quickcheck-instances
-    - generic-random
     - tasty-hunit
     - tasty-quickcheck
     - raw-strings-qq

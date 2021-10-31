@@ -7,15 +7,13 @@ import qualified Data.ByteString.Lazy           as BL
 import           Data.Maybe                     (fromJust)
 import           Text.RawString.QQ              (r)
 
-import           Generic.Random                 (genericArbitrary, uniform)
-import           Test.QuickCheck                (arbitraryBoundedEnum, (===))
-import           Test.QuickCheck.Instances.Text
-import           Test.QuickCheck.Instances.Time
+import           Test.QuickCheck                ((===))
 import           Test.Tasty
 import           Test.Tasty.HUnit
 import           Test.Tasty.QuickCheck          as QC
 
 import           GoPro.Plus.Media
+import           GoPro.Plus.Arbitrary ()
 
 exampleMedia :: BL.ByteString
 exampleMedia = [r|
@@ -55,38 +53,6 @@ testFileInfo = do
                          ["proshake", "verizon"]] (fs ^.. variations . folded . var_transforms . _Just)
 
   assertEqual (show fs) "intoalightpost" (fs ^. files . folded . file_transforms . folded . folded)
-
-instance Arbitrary FileInfo where arbitrary = genericArbitrary uniform
-
-instance Arbitrary FileStuff where
-  arbitrary = do
-    _files <- vector =<< choose (0,3)
-    _variations <- vector =<< choose (0,3)
-    _sprites <- vector =<< choose (0,3)
-    _sidecar_files <- vector =<< choose (0,3)
-    pure FileStuff{..}
-
-instance Arbitrary Variation where arbitrary = genericArbitrary uniform
-
-instance Arbitrary SpriteFrame where arbitrary = genericArbitrary uniform
-
-instance Arbitrary SidecarFile where arbitrary = genericArbitrary uniform
-
-instance Arbitrary Sprite where arbitrary = genericArbitrary uniform
-
-instance Arbitrary File where arbitrary = genericArbitrary uniform
-
-instance Arbitrary Medium where arbitrary = genericArbitrary uniform
-
-instance Arbitrary Moment where arbitrary = genericArbitrary uniform
-
-instance Arbitrary ReadyToViewType where arbitrary = arbitraryBoundedEnum
-
-instance Arbitrary MediumType where arbitrary = arbitraryBoundedEnum
-
-instance Arbitrary PageInfo where arbitrary = genericArbitrary uniform
-
-instance Arbitrary Listing where arbitrary = genericArbitrary uniform
 
 propRTJSON :: (J.FromJSON j, J.ToJSON j, Eq j, Show j) => j -> Property
 propRTJSON = fromJust . J.decode . J.encode >>= (===)
