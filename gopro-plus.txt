@@ -7,7 +7,7 @@
 --   Please see the README on GitHub at
 --   <a>https://github.com/dustin/gopro-plus#readme</a>
 @package gopro-plus
-@version 0.5.0.0
+@version 0.6.0.0
 
 
 -- | GoPro Plus authentication.
@@ -363,6 +363,23 @@ instance Data.Aeson.Types.ToJSON.ToJSON GoPro.Plus.Media.PageInfo
 instance GHC.Classes.Eq GoPro.Plus.Media.PageInfo
 instance GHC.Show.Show GoPro.Plus.Media.PageInfo
 instance GHC.Generics.Generic GoPro.Plus.Media.PageInfo
+
+
+-- | Arbitrary instances for GoPro.Plus
+module GoPro.Plus.Arbitrary
+instance Test.QuickCheck.Arbitrary.Arbitrary GoPro.Plus.Media.FileInfo
+instance Test.QuickCheck.Arbitrary.Arbitrary GoPro.Plus.Media.FileStuff
+instance Test.QuickCheck.Arbitrary.Arbitrary GoPro.Plus.Media.Variation
+instance Test.QuickCheck.Arbitrary.Arbitrary GoPro.Plus.Media.SpriteFrame
+instance Test.QuickCheck.Arbitrary.Arbitrary GoPro.Plus.Media.SidecarFile
+instance Test.QuickCheck.Arbitrary.Arbitrary GoPro.Plus.Media.Sprite
+instance Test.QuickCheck.Arbitrary.Arbitrary GoPro.Plus.Media.File
+instance Test.QuickCheck.Arbitrary.Arbitrary GoPro.Plus.Media.Medium
+instance Test.QuickCheck.Arbitrary.Arbitrary GoPro.Plus.Media.Moment
+instance Test.QuickCheck.Arbitrary.Arbitrary GoPro.Plus.Media.ReadyToViewType
+instance Test.QuickCheck.Arbitrary.Arbitrary GoPro.Plus.Media.MediumType
+instance Test.QuickCheck.Arbitrary.Arbitrary GoPro.Plus.Media.PageInfo
+instance Test.QuickCheck.Arbitrary.Arbitrary GoPro.Plus.Media.Listing
 
 
 -- | GoPro Plus media upload client.
