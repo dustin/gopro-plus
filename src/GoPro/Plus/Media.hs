@@ -51,7 +51,7 @@ import           Data.Aeson                   (FromJSON (..), Options (..), ToJS
 import qualified Data.Aeson                   as J
 import           Data.Aeson.Types             (typeMismatch)
 import qualified Data.ByteString.Lazy         as BL
-import           Data.Char                    (toLower, toUpper)
+import           Data.Char                    (toLower)
 import qualified Data.Map.Strict              as Map
 import qualified Data.Text                    as T
 import           Data.Time.Clock              (UTCTime)
@@ -111,16 +111,15 @@ data ReadyToViewType = ViewReady
     | ViewTranscoding
     | ViewProcessing
     | ViewUploading
-    deriving (Bounded, Enum, Show, Read, Eq)
+    deriving (Bounded, Enum, Show, Read, Generic, Eq)
 
 instance ToJSON ReadyToViewType where
-  toJSON = J.String . T.pack . fmap toLower . drop 4 . show
+  toEncoding = genericToEncoding jsonOpts{ constructorTagModifier = fmap toLower . dropPrefix "View"}
+  toJSON = genericToJSON jsonOpts{ constructorTagModifier = fmap toLower . dropPrefix "View"}
+
 
 instance FromJSON ReadyToViewType where
-  parseJSON (J.String s) = pure . read . trans . T.unpack $ s
-    where trans (x:xs) = "View" <> (toUpper x : xs)
-          trans []     = error "empty ready to view type"
-  parseJSON invalid      = typeMismatch "Response" invalid
+  parseJSON = genericParseJSON jsonOpts{ constructorTagModifier = fmap toLower . dropPrefix "View"}
 
 data Medium = Medium
     { _medium_id              :: MediumID
