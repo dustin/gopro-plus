@@ -347,6 +347,7 @@ instance GHC.Show.Show GoPro.Plus.Media.MediumType
 instance GHC.Enum.Enum GoPro.Plus.Media.MediumType
 instance GHC.Enum.Bounded GoPro.Plus.Media.MediumType
 instance GHC.Classes.Eq GoPro.Plus.Media.ReadyToViewType
+instance GHC.Generics.Generic GoPro.Plus.Media.ReadyToViewType
 instance GHC.Read.Read GoPro.Plus.Media.ReadyToViewType
 instance GHC.Show.Show GoPro.Plus.Media.ReadyToViewType
 instance GHC.Enum.Enum GoPro.Plus.Media.ReadyToViewType
