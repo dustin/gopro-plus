@@ -9,10 +9,12 @@ Stability   : experimental
 GoPro Plus media upload client.
 -}
 
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE RankNTypes        #-}
-{-# LANGUAGE TemplateHaskell   #-}
-{-# LANGUAGE TupleSections     #-}
+{-# LANGUAGE FlexibleContexts    #-}
+{-# LANGUAGE FlexibleInstances   #-}
+{-# LANGUAGE RankNTypes          #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TemplateHaskell     #-}
+{-# LANGUAGE TupleSections       #-}
 
 module GoPro.Plus.Upload (
   -- * High level upload all-in-one convenience.
@@ -35,14 +37,16 @@ module GoPro.Plus.Upload (
 import           Control.Applicative          (liftA3)
 import           Control.Lens
 import           Control.Monad                (void, when, zipWithM_)
-import           Control.Monad.Catch          (MonadMask (..))
+import           Control.Monad.Catch          (Handler (..), MonadMask (..), SomeException (..))
 import           Control.Monad.IO.Class       (MonadIO (..))
 import           Control.Monad.State          (StateT (..), evalStateT, get, gets, lift, modify)
-import           Control.Retry                (RetryStatus (..), exponentialBackoff, limitRetries, recoverAll)
+import           Control.Retry                (RetryStatus (..), exponentialBackoff, limitRetries, recovering,
+                                               skipAsyncExceptions)
 import qualified Data.Aeson                   as J
 import           Data.Aeson.Lens
 import qualified Data.ByteString.Lazy         as BL
 import           Data.Char                    (toUpper)
+import           Data.Functor                 (($>))
 import           Data.List.NonEmpty           (NonEmpty (..))
 import qualified Data.List.NonEmpty           as NE
 import           Data.Maybe                   (fromJust)
@@ -242,15 +246,20 @@ uploadChunk :: (MonadMask m, MonadIO m)
             => FilePath    -- ^ The path being uploaded.
             -> UploadPart  -- ^ The UploadPart describing the chunk of upload being transferred
             -> Uploader m ()
-uploadChunk fp UploadPart{..} = recoverAll policy $ \r -> do
-  when (rsIterNumber r > 0) $ gets logAction >>= \f -> lift (f (retryMsg (rsIterNumber r)))
-  liftIO $ withFile fp ReadMode $ \fh -> do
-    hSeek fh AbsoluteSeek ((_uploadPart - 1) * chunkSize)
-    void $ putWith defOpts _uploadURL =<< BL.hGet fh (fromIntegral _uploadLength)
+uploadChunk fp UploadPart{..} = gets logAction >>= \la -> recovering policy (handlers la) $ \r -> do
+    when (rsIterNumber r > 0) $ lift (la (retryMsg (rsIterNumber r)))
+    liftIO $ withFile fp ReadMode $ \fh -> do
+      hSeek fh AbsoluteSeek ((_uploadPart - 1) * chunkSize)
+      void $ putWith defOpts _uploadURL =<< BL.hGet fh (fromIntegral _uploadLength)
 
     where policy = exponentialBackoff 2000000 <> limitRetries 9
           retryMsg a = mconcat ["Retrying upload of ", show fp,
-                                " part ", show _uploadPart, " attempt ", show a]
+                                " part ", show _uploadPart, " length ", show _uploadLength,
+                                " attempt ", show a]
+          handlers la = skipAsyncExceptions <> [h]
+            where
+              h _ = Handler $ \ (e :: SomeException) -> lift (la (" upload error: " <> show e)) $> True
+
 
 -- | Mark the given upload for the given derivative as complete.
 completeUpload :: (HasGoProAuth m, MonadIO m)
