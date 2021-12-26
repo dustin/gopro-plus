@@ -41,6 +41,7 @@ import           Control.Monad.State          (StateT (..), evalStateT, get, get
 import           Control.Retry                (RetryStatus (..), exponentialBackoff, limitRetries, recoverAll)
 import qualified Data.Aeson                   as J
 import           Data.Aeson.Lens
+import qualified Data.ByteString.Char8        as BC
 import qualified Data.ByteString.Lazy         as BL
 import           Data.Char                    (toUpper)
 import           Data.List.NonEmpty           (NonEmpty (..))
@@ -254,7 +255,9 @@ uploadChunk fp UploadPart{..} = recoverAll policy $ \r -> do
   csize <- gets chunkSize
   liftIO $ withFile fp ReadMode $ \fh -> do
     hSeek fh AbsoluteSeek ((_uploadPart - 1) * csize)
-    void $ putWith defOpts _uploadURL =<< BL.hGet fh (fromIntegral _uploadLength)
+    bytes <- BL.hGet fh (fromIntegral _uploadLength)
+    let opts = defOpts & header "Content-Length" .~ [BC.pack . show . BL.length $ bytes]
+    void $ putWith opts _uploadURL bytes
 
     where policy = exponentialBackoff 2000000 <> limitRetries 9
           retryMsg a = mconcat ["Retrying upload of ", show fp,

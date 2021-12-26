@@ -4,21 +4,22 @@ module GoPro.Plus.Internal.HTTP where
 
 import           Control.Lens
 import           Control.Monad.IO.Class (MonadIO (..))
-import           Data.Aeson             (FromJSON (..), Options (..),
-                                         defaultOptions, fieldLabelModifier)
+import           Data.Aeson             (FromJSON (..), Options (..), defaultOptions, fieldLabelModifier)
 import qualified Data.ByteString.Char8  as BC
 import qualified Data.ByteString.Lazy   as BL
 import           Data.Text              (Text)
 import qualified Data.Text.Encoding     as TE
-import           Network.Wreq           (Options, asJSON, defaults, getWith,
-                                         header, postWith, responseBody)
+import           Network.Wreq           (Options, asJSON, defaults, getWith, header, postWith, responseBody)
 import           Network.Wreq.Types     (Postable)
 
 userAgent :: BC.ByteString
-userAgent = "github.com/dustin/gopro 0.1"
+userAgent = "github.com/dustin/gopro-plus 0.6.0.3"
 
 defOpts :: Network.Wreq.Options
 defOpts = defaults & header "User-Agent" .~ [userAgent]
+          & header "Referer" .~ ["https://plus.gopro.com/"]
+          & header "Origin" .~ ["https://plus.gopro.com"]
+          & header "Accept-Language" .~ ["en-US,en;q=0.9"]
 
 authOpts :: Text -> Network.Wreq.Options
 authOpts tok = defOpts & header "Authorization" .~ ["Bearer " <> TE.encodeUtf8 tok]
