@@ -27,7 +27,7 @@ module GoPro.Plus.Upload (
   Upload(..), uploadID, uploadParts,
   -- * Uploader monad.
   Uploader,
-  setMediumType, setLogAction,
+  setMediumType, setLogAction, setChunkSize,
   -- * For your convenience.
   listUploading
   ) where
@@ -83,6 +83,7 @@ data Env m = Env {
   extension  :: T.Text,
   filename   :: String,
   mediumID   :: MediumID,
+  chunkSize  :: Integer,
   logAction  :: (MonadMask m, Monad m) => String -> m ()
   }
 
@@ -97,6 +98,9 @@ runUpload :: (HasGoProAuth m, MonadIO m)
           -> m a          -- ^ The result of the inner action.
 runUpload fileList = resumeUpload fileList ""
 
+defaultChunkSize :: Integer
+defaultChunkSize = 6*1024*1024
+
 -- | Run an Uploader monad for which we already know the MediumID
 -- (i.e., we're resuming an upload we previously began).
 resumeUpload :: (HasGoProAuth m, MonadIO m) => NonEmpty FilePath -> MediumID -> Uploader m a -> m a
@@ -106,6 +110,7 @@ resumeUpload fileList@(fp :| _) mediumID a = evalStateT a Env{..}
     filename = takeFileName fp
     mediumType = fileType extension
     logAction _ = pure ()
+    chunkSize = defaultChunkSize
 
     fileType "JPG" = Photo
     fileType _     = Video
@@ -118,6 +123,10 @@ setMediumType t = modify (\m -> m{mediumType=t})
 -- interesting things might happen).
 setLogAction :: (Monad m, MonadMask m) => (String -> m ()) -> Uploader m ()
 setLogAction t = modify (\m -> m{logAction=t})
+
+-- | Set the individual chunk size for uploading parts of media.
+setChunkSize :: (Monad m, MonadMask m) => Integer -> Uploader m ()
+setChunkSize t = modify (\m -> m{chunkSize=t})
 
 jpostVal :: (HasGoProAuth m, MonadIO m) => Options -> String -> J.Value -> m J.Value
 jpostVal opts u v = liftIO $ jpostWith opts u v
@@ -182,9 +191,6 @@ data Upload = Upload {
 
 makeLenses ''Upload
 
-chunkSize :: Integer
-chunkSize = 6291456
-
 -- | Create a new upload for a derivative.
 createUpload :: (HasGoProAuth m, MonadIO m)
              => DerivativeID -- ^ The derivative into which we're uploading.
@@ -216,15 +222,16 @@ getUpload :: (HasGoProAuth m, MonadIO m)
           -> Uploader m Upload
 getUpload upid did part fsize = do
   AuthInfo{..} <- goproAuth
+  csize <- gets chunkSize
 
-  let pages = ceiling ((fromIntegral fsize :: Double) / fromIntegral chunkSize) :: Int
+  let pages = ceiling ((fromIntegral fsize :: Double) / fromIntegral csize) :: Int
       upopts = authOpts _access_token & params .~ [("id", upid),
                                                    ("page", "1"),
                                                    ("per_page", (T.pack . show) pages),
                                                    ("item_number", (T.pack . show) part),
                                                    ("camera_position", "default"),
                                                    ("file_size", (T.pack . show) fsize),
-                                                   ("part_size", (T.pack . show) chunkSize)]
+                                                   ("part_size", (T.pack . show) csize)]
                & header "Accept" .~  ["application/vnd.gopro.jk.user-uploads+json; version=2.0.0"]
   upaths <- jgetWith upopts (T.unpack ("https://api.gopro.com/user-uploads/" <> did))
   let Just ups = (upaths :: J.Value) ^? key "_embedded" . key "authorizations" . _Array . to V.toList
@@ -244,8 +251,9 @@ uploadChunk :: (MonadMask m, MonadIO m)
             -> Uploader m ()
 uploadChunk fp UploadPart{..} = recoverAll policy $ \r -> do
   when (rsIterNumber r > 0) $ gets logAction >>= \f -> lift (f (retryMsg (rsIterNumber r)))
+  csize <- gets chunkSize
   liftIO $ withFile fp ReadMode $ \fh -> do
-    hSeek fh AbsoluteSeek ((_uploadPart - 1) * chunkSize)
+    hSeek fh AbsoluteSeek ((_uploadPart - 1) * csize)
     void $ putWith defOpts _uploadURL =<< BL.hGet fh (fromIntegral _uploadLength)
 
     where policy = exponentialBackoff 2000000 <> limitRetries 9
@@ -261,13 +269,14 @@ completeUpload :: (HasGoProAuth m, MonadIO m)
                -> Uploader m ()
 completeUpload upid did part fsize = do
   AuthInfo{..} <- goproAuth
+  csize <- gets chunkSize
   let u2 = J.Object (mempty & at "id" ?~ J.String upid
                      & at "item_number" ?~ J.Number (fromIntegral part)
                      & at "camera_position" ?~ J.String "default"
                      & at "complete" ?~ J.Bool True
                      & at "derivative_id" ?~ J.String did
                      & at "file_size" ?~ J.String ((T.pack . show) fsize)
-                     & at "part_size" ?~ J.String ((T.pack . show) chunkSize))
+                     & at "part_size" ?~ J.String ((T.pack . show) csize))
   void . liftIO $ putWith (popts _access_token) (T.unpack ("https://api.gopro.com/user-uploads/" <> did)) u2
 
   where
