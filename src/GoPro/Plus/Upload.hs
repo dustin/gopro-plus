@@ -114,6 +114,7 @@ resumeUpload fileList@(fp :| _) mediumID a = evalStateT a Env{..}
     chunkSize = defaultChunkSize
 
     fileType "JPG" = Photo
+    fileType "GPR" = Photo
     fileType _     = Video
 
 -- | Override the detected medium type.
