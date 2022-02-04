@@ -30,7 +30,7 @@ module GoPro.Plus.Media (
   File(..), file_camera_position, file_height, file_width,
   file_item_number, file_orientation, file_head, file_url, file_transforms,
   Variation(..), var_height, var_width, var_label, var_quality,
-  var_type, var_transforms, var_head, var_url,
+  var_type, var_transforms, var_head, var_url, var_item_number,
   SpriteFrame(..), frame_count, frame_height, frame_width,
   Sprite(..), sprite_fps, sprite_frame, sprite_height, sprite_width,
   sprite_type, sprite_heads, sprite_urls,
@@ -244,14 +244,15 @@ instance ToJSON File where
   toJSON = genericToJSON jsonOpts{ fieldLabelModifier = dropPrefix "_file_" }
 
 data Variation = Variation
-    { _var_height     :: Int
-    , _var_width      :: Int
-    , _var_label      :: String
-    , _var_quality    :: String
-    , _var_transforms :: Maybe [String]
-    , _var_type       :: String
-    , _var_head       :: String
-    , _var_url        :: String
+    { _var_height      :: Int
+    , _var_width       :: Int
+    , _var_label       :: String
+    , _var_quality     :: String
+    , _var_transforms  :: Maybe [String]
+    , _var_item_number :: Maybe Int
+    , _var_type        :: String
+    , _var_head        :: String
+    , _var_url         :: String
     }
     deriving (Generic, Eq, Show)
 
