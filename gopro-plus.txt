@@ -7,7 +7,7 @@
 --   Please see the README on GitHub at
 --   <a>https://github.com/dustin/gopro-plus#readme</a>
 @package gopro-plus
-@version 0.6.0.4
+@version 0.6.1.1
 
 
 -- | GoPro Plus authentication.
@@ -162,6 +162,8 @@ class HasMediaLabel c
 media_label :: HasMediaLabel c => Lens' c String
 class HasMediaType c
 media_type :: HasMediaType c => Lens' c String
+class HasMediaItemNumber c
+media_item_number :: HasMediaItemNumber c => Lens' c (Maybe Int)
 data File
 File :: String -> Int -> Int -> Int -> Int -> Maybe [String] -> String -> String -> File
 [_file_camera_position] :: File -> String
@@ -181,12 +183,13 @@ file_head :: Lens' File String
 file_url :: Lens' File String
 file_transforms :: Lens' File (Maybe [String])
 data Variation
-Variation :: Int -> Int -> String -> String -> Maybe [String] -> String -> String -> String -> Variation
+Variation :: Int -> Int -> String -> String -> Maybe [String] -> Maybe Int -> String -> String -> String -> Variation
 [_var_height] :: Variation -> Int
 [_var_width] :: Variation -> Int
 [_var_label] :: Variation -> String
 [_var_quality] :: Variation -> String
 [_var_transforms] :: Variation -> Maybe [String]
+[_var_item_number] :: Variation -> Maybe Int
 [_var_type] :: Variation -> String
 [_var_head] :: Variation -> String
 [_var_url] :: Variation -> String
@@ -198,6 +201,7 @@ var_type :: Lens' Variation String
 var_transforms :: Lens' Variation (Maybe [String])
 var_head :: Lens' Variation String
 var_url :: Lens' Variation String
+var_item_number :: Lens' Variation (Maybe Int)
 data SpriteFrame
 SpriteFrame :: Int -> Int -> Int -> SpriteFrame
 [_frame_count] :: SpriteFrame -> Int
@@ -322,6 +326,7 @@ instance GoPro.Plus.Media.HasMediaURL GoPro.Plus.Media.Variation
 instance GoPro.Plus.Media.HasMediaHead GoPro.Plus.Media.Variation
 instance GoPro.Plus.Media.HasMediaLabel GoPro.Plus.Media.Variation
 instance GoPro.Plus.Media.HasMediaType GoPro.Plus.Media.Variation
+instance GoPro.Plus.Media.HasMediaItemNumber GoPro.Plus.Media.Variation
 instance Data.Aeson.Types.FromJSON.FromJSON GoPro.Plus.Media.Variation
 instance Data.Aeson.Types.ToJSON.ToJSON GoPro.Plus.Media.Variation
 instance GHC.Show.Show GoPro.Plus.Media.Variation
@@ -329,6 +334,7 @@ instance GHC.Classes.Eq GoPro.Plus.Media.Variation
 instance GHC.Generics.Generic GoPro.Plus.Media.Variation
 instance GoPro.Plus.Media.HasMediaURL GoPro.Plus.Media.File
 instance GoPro.Plus.Media.HasMediaHead GoPro.Plus.Media.File
+instance GoPro.Plus.Media.HasMediaItemNumber GoPro.Plus.Media.File
 instance Data.Aeson.Types.FromJSON.FromJSON GoPro.Plus.Media.File
 instance Data.Aeson.Types.ToJSON.ToJSON GoPro.Plus.Media.File
 instance GHC.Show.Show GoPro.Plus.Media.File
