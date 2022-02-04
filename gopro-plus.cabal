@@ -4,10 +4,10 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 568ca727f101246b004f87ca33c63a764b181feb946f40ec1212abb44a2d8b58
+-- hash: 11284666d679019928c9ebccb4138e841a5db94cdcfd6067e862a357f4e57843
 
 name:           gopro-plus
-version:        0.6.1.0
+version:        0.6.1.1
 synopsis:       GoPro Plus Client API.
 description:    Please see the README on GitHub at <https://github.com/dustin/gopro-plus#readme>
 category:       Web

@@ -26,7 +26,7 @@ module GoPro.Plus.Media (
   medium_ready_to_view, medium_source_duration, medium_type,
   medium_token, medium_width, medium_height,
   Listing(..), media, pages,
-  HasMediaURL(..), HasMediaHead(..), HasMediaLabel(..), HasMediaType(..),
+  HasMediaURL(..), HasMediaHead(..), HasMediaLabel(..), HasMediaType(..), HasMediaItemNumber(..),
   File(..), file_camera_position, file_height, file_width,
   file_item_number, file_orientation, file_head, file_url, file_transforms,
   Variation(..), var_height, var_width, var_label, var_quality,
@@ -217,6 +217,9 @@ class HasMediaLabel c where
 class HasMediaType c where
   media_type :: Lens' c String
 
+class HasMediaItemNumber c where
+  media_item_number :: Lens' c (Maybe Int)
+
 data File = File
     { _file_camera_position :: String
     , _file_height          :: Int
@@ -233,6 +236,11 @@ makeLenses  ''File
 
 instance HasMediaURL File where media_url = file_url
 instance HasMediaHead File where media_head = file_head
+
+instance HasMediaItemNumber File where
+  media_item_number = lens
+                        (Just . _file_item_number)
+                        (\f -> maybe f (\x -> f{_file_item_number=x}))
 
 instance FromJSON File where
   parseJSON = genericParseJSON defaultOptions {
@@ -262,6 +270,7 @@ instance HasMediaURL Variation where media_url = var_url
 instance HasMediaHead Variation where media_head = var_head
 instance HasMediaLabel Variation where media_label = var_label
 instance HasMediaType Variation where media_type = var_type
+instance HasMediaItemNumber Variation where media_item_number = var_item_number
 
 instance FromJSON Variation where
   parseJSON = genericParseJSON defaultOptions {
