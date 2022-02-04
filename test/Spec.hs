@@ -1,6 +1,8 @@
 {-# LANGUAGE QuasiQuotes      #-}
 {-# LANGUAGE TypeApplications #-}
 
+module Spec where
+
 import           Control.Lens
 import qualified Data.Aeson                     as J
 import qualified Data.ByteString.Lazy           as BL
@@ -23,15 +25,15 @@ exampleMedia = [r|
 {"captured_at":"2020-04-06T00:33:22Z","content_title":null,"content_type":null,"created_at":"2020-04-06T01:39:39Z","gopro_user_id":"uid","file_size":7930021,"height":3000,"fov":null,"id":"EDavpqr4GVe8O","moments_count":0,"on_public_profile":false,"orientation":1,"play_as":"photo","ready_to_edit":true,"ready_to_view":"ready","resolution":"12000000","source_duration":"0","token":"token2","type":"Photo","width":4000}]}}
 |]
 
-testSearchParser :: Assertion
-testSearchParser = do
+unit_searchParser :: Assertion
+unit_searchParser = do
   let l = J.decode exampleMedia :: Maybe Listing
   assertEqual (show l) (Just (PageInfo 1 100 2169 22)) (l ^? _Just . pages)
   assertEqual (show l) [Video, Photo] (l ^.. _Just . media . folded . medium_type)
   assertEqual (show l) ["62NzWRrpPXm7o", "EDavpqr4GVe8O"] (l ^.. _Just . media . folded . medium_id)
 
-testFileInfo :: Assertion
-testFileInfo = do
+unit_fileInfo :: Assertion
+unit_fileInfo = do
   fi <- J.decode <$> BL.readFile "test/mediaex.json" :: IO (Maybe FileInfo)
   assertEqual (show fi) (Just "G0000004.JPG") (fi ^? _Just . filename)
   let Just fs = fi ^? _Just . fileStuff
@@ -57,10 +59,8 @@ testFileInfo = do
 propRTJSON :: (J.FromJSON j, J.ToJSON j, Eq j, Show j) => j -> Property
 propRTJSON = fromJust . J.decode . J.encode >>= (===)
 
-tests :: [TestTree]
-tests = [
-    testCase "Parsing" testSearchParser,
-    testCase "FileInfo" testFileInfo,
+test_props :: [TestTree]
+test_props = [
     testGroup "JSON round tripping" $ [
         testProperty "FileInfo" (propRTJSON @FileInfo),
         testProperty "Variation" (propRTJSON @Variation),
@@ -76,6 +76,3 @@ tests = [
         testProperty "PageInfo" (propRTJSON @PageInfo)
         ]
     ]
-
-main :: IO ()
-main = defaultMain $ testGroup "All Tests" tests

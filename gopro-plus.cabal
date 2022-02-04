@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 60d6f10db52ab451aa3fe380ddfadb045014dd8318ce45df47a7fb9f83cb7ae4
+-- hash: 568ca727f101246b004f87ca33c63a764b181feb946f40ec1212abb44a2d8b58
 
 name:           gopro-plus
 version:        0.6.1.0
@@ -72,8 +72,9 @@ library
 
 test-suite gopro-plus-test
   type: exitcode-stdio-1.0
-  main-is: Spec.hs
+  main-is: Main.hs
   other-modules:
+      Spec
       Paths_gopro_plus
   hs-source-dirs:
       test
@@ -102,6 +103,7 @@ test-suite gopro-plus-test
     , raw-strings-qq
     , retry
     , tasty
+    , tasty-discover
     , tasty-hunit
     , tasty-quickcheck
     , text
