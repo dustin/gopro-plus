@@ -56,6 +56,12 @@ unit_fileInfo = do
 
   assertEqual (show fs) "intoalightpost" (fs ^. files . folded . file_transforms . folded . folded)
 
+unit_concat :: Assertion
+unit_concat = do
+  fi <- J.decode <$> BL.readFile "test/concat.json" :: IO (Maybe FileInfo)
+  let Just fs = fi ^? _Just . fileStuff
+  assertEqual (show fi) [1, 2, 3] (fs ^.. variations . folded . var_item_number . _Just)
+
 propRTJSON :: (J.FromJSON j, J.ToJSON j, Eq j, Show j) => j -> Property
 propRTJSON = fromJust . J.decode . J.encode >>= (===)
 
