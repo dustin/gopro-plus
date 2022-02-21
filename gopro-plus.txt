@@ -7,7 +7,7 @@
 --   Please see the README on GitHub at
 --   <a>https://github.com/dustin/gopro-plus#readme</a>
 @package gopro-plus
-@version 0.6.1.1
+@version 0.6.1.2
 
 
 -- | GoPro Plus authentication.
@@ -227,17 +227,19 @@ sprite_type :: Lens' Sprite String
 sprite_heads :: Lens' Sprite [String]
 sprite_urls :: Lens' Sprite [String]
 data SidecarFile
-SidecarFile :: Double -> String -> String -> String -> String -> SidecarFile
+SidecarFile :: Double -> String -> String -> String -> String -> Maybe Int -> SidecarFile
 [_sidecar_fps] :: SidecarFile -> Double
 [_sidecar_label] :: SidecarFile -> String
 [_sidecar_type] :: SidecarFile -> String
 [_sidecar_head] :: SidecarFile -> String
 [_sidecar_url] :: SidecarFile -> String
+[_sidecar_item_number] :: SidecarFile -> Maybe Int
 sidecar_fps :: Lens' SidecarFile Double
 sidecar_label :: Lens' SidecarFile String
 sidecar_type :: Lens' SidecarFile String
 sidecar_head :: Lens' SidecarFile String
 sidecar_url :: Lens' SidecarFile String
+sidecar_item_number :: Lens' SidecarFile (Maybe Int)
 data FileStuff
 FileStuff :: [File] -> [Variation] -> [Sprite] -> [SidecarFile] -> FileStuff
 [_files] :: FileStuff -> [File]
@@ -307,6 +309,7 @@ instance GoPro.Plus.Media.HasMediaURL GoPro.Plus.Media.SidecarFile
 instance GoPro.Plus.Media.HasMediaHead GoPro.Plus.Media.SidecarFile
 instance GoPro.Plus.Media.HasMediaLabel GoPro.Plus.Media.SidecarFile
 instance GoPro.Plus.Media.HasMediaType GoPro.Plus.Media.SidecarFile
+instance GoPro.Plus.Media.HasMediaItemNumber GoPro.Plus.Media.SidecarFile
 instance Data.Aeson.Types.FromJSON.FromJSON GoPro.Plus.Media.SidecarFile
 instance Data.Aeson.Types.ToJSON.ToJSON GoPro.Plus.Media.SidecarFile
 instance GHC.Show.Show GoPro.Plus.Media.SidecarFile
