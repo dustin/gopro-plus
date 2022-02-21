@@ -34,7 +34,7 @@ module GoPro.Plus.Media (
   SpriteFrame(..), frame_count, frame_height, frame_width,
   Sprite(..), sprite_fps, sprite_frame, sprite_height, sprite_width,
   sprite_type, sprite_heads, sprite_urls,
-  SidecarFile(..), sidecar_fps, sidecar_label, sidecar_type, sidecar_head, sidecar_url,
+  SidecarFile(..), sidecar_fps, sidecar_label, sidecar_type, sidecar_head, sidecar_url, sidecar_item_number,
   FileStuff(..), files, variations, sprites, sidecar_files,
   FileInfo(..), fileStuff, filename,
   Error(..), error_reason, error_code, error_description, error_id,
@@ -322,11 +322,12 @@ instance ToJSON Sprite where
   toJSON = genericToJSON jsonOpts{ fieldLabelModifier = dropPrefix "_sprite_" }
 
 data SidecarFile = SidecarFile
-  { _sidecar_fps   :: Double
-  , _sidecar_label :: String
-  , _sidecar_type  :: String
-  , _sidecar_head  :: String
-  , _sidecar_url   :: String
+  { _sidecar_fps         :: Double
+  , _sidecar_label       :: String
+  , _sidecar_type        :: String
+  , _sidecar_head        :: String
+  , _sidecar_url         :: String
+  , _sidecar_item_number :: Maybe Int
   } deriving (Generic, Eq, Show)
 
 makeLenses ''SidecarFile
@@ -335,6 +336,7 @@ instance HasMediaURL SidecarFile where media_url = sidecar_url
 instance HasMediaHead SidecarFile where media_head = sidecar_head
 instance HasMediaLabel SidecarFile where media_label = sidecar_label
 instance HasMediaType SidecarFile where media_type = sidecar_type
+instance HasMediaItemNumber SidecarFile where media_item_number = sidecar_item_number
 
 instance FromJSON SidecarFile where
   parseJSON = genericParseJSON defaultOptions {
