@@ -7,7 +7,7 @@
 --   Please see the README on GitHub at
 --   <a>https://github.com/dustin/gopro-plus#readme</a>
 @package gopro-plus
-@version 0.6.1.2
+@version 0.6.2.0
 
 
 -- | GoPro Plus authentication.
@@ -114,6 +114,11 @@ TimeLapseVideo :: MediumType
 
 -- | a set of photos taken in a burst
 Burst :: MediumType
+Chaptered :: MediumType
+Livestream :: MediumType
+Looped :: MediumType
+LoopedVideo :: MediumType
+BurstVideo :: MediumType
 data ReadyToViewType
 ViewReady :: ReadyToViewType
 ViewFailure :: ReadyToViewType
@@ -122,6 +127,8 @@ ViewRegistered :: ReadyToViewType
 ViewTranscoding :: ReadyToViewType
 ViewProcessing :: ReadyToViewType
 ViewUploading :: ReadyToViewType
+ViewPreTranscoding :: ReadyToViewType
+ViewUpdating :: ReadyToViewType
 data Medium
 Medium :: MediumID -> Maybe String -> UTCTime -> UTCTime -> Maybe Int -> Int -> ReadyToViewType -> Maybe String -> MediumType -> String -> Maybe Int -> Maybe Int -> Medium
 [_medium_id] :: Medium -> MediumID
