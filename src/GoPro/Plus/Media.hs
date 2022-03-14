@@ -95,6 +95,11 @@ data MediumType = Photo -- ^ a still photo
     | TimeLapse -- ^ a timelapse series of photos
     | TimeLapseVideo -- ^ a timelapse video
     | Burst -- ^ a set of photos taken in a burst
+    | Chaptered
+    | Livestream
+    | Looped
+    | LoopedVideo
+    | BurstVideo
     deriving (Bounded, Enum, Show, Read, Eq)
 
 instance ToJSON MediumType where
@@ -111,6 +116,8 @@ data ReadyToViewType = ViewReady
     | ViewTranscoding
     | ViewProcessing
     | ViewUploading
+    | ViewPreTranscoding
+    | ViewUpdating
     deriving (Bounded, Enum, Show, Read, Generic, Eq)
 
 instance ToJSON ReadyToViewType where
