@@ -60,6 +60,7 @@ import           Generics.Deriving.Base       (Generic)
 import           Network.Wreq                 (asJSON, deleteWith, responseBody)
 import           Network.Wreq.Types           (Putable)
 import           System.Random                (getStdRandom, randomR)
+import           Text.Read                    (readMaybe)
 
 import           GoPro.Plus.Auth
 import           GoPro.Plus.Internal.AuthHTTP
@@ -106,7 +107,7 @@ instance ToJSON MediumType where
   toJSON = J.String . T.pack . show
 
 instance FromJSON MediumType where
-  parseJSON (J.String x) = pure . read . T.unpack $ x
+  parseJSON (J.String x) = maybe (fail ("Unexpected MediumType: " <> show x)) pure . readMaybe . T.unpack $ x
   parseJSON invalid      = typeMismatch "Response" invalid
 
 data ReadyToViewType = ViewReady

@@ -46,7 +46,7 @@ import qualified Data.ByteString.Lazy         as BL
 import           Data.Char                    (toUpper)
 import           Data.List.NonEmpty           (NonEmpty (..))
 import qualified Data.List.NonEmpty           as NE
-import           Data.Maybe                   (fromJust)
+import           Data.Maybe                   (fromJust, fromMaybe)
 import qualified Data.Text                    as T
 import           Data.Time.Clock.POSIX        (getCurrentTime)
 import qualified Data.Vector                  as V
@@ -54,6 +54,7 @@ import           Network.Wreq                 (Options, header, params, putWith)
 import           System.FilePath.Posix        (takeExtension, takeFileName)
 import           System.IO                    (IOMode (..), SeekMode (..), hSeek, withFile)
 import           System.Posix.Files           (fileSize, getFileStatus)
+import           Text.Read                    (readMaybe)
 import           UnliftIO                     (MonadUnliftIO (..))
 
 import           GoPro.Plus.Auth              (AuthInfo (..), HasGoProAuth (..))
@@ -241,7 +242,7 @@ getUpload upid did part fsize = do
 
   where
     tInt :: T.Text -> Integer
-    tInt = read . T.unpack
+    tInt = fromMaybe 0 . readMaybe . T.unpack
     aChunk v = liftA3 UploadPart (v ^? key "Content-Length" . _String . to tInt)
                                  (v ^? key "part" . _Integer . to toInteger)
                                  (v ^? key "url" . _String . to T.unpack)
