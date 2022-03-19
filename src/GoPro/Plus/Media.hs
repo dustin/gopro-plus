@@ -16,6 +16,7 @@ GoPro Plus media client.
 module GoPro.Plus.Media (
   -- * Accessing Data
   list, listAll, listWhile, medium,
+  notReady,
   retrieve, delete,
   fetchThumbnail,
   -- * Data Types
@@ -212,6 +213,12 @@ listWhile f = Map.elems <$> dig 0 mempty
         if (not . null) ms && f ms
           then dig (n + 1) m'
           else pure m'
+
+-- | Get a list of items whose processing is failed or incomplete.
+--
+-- This includes items that are currently uploading, or items that will not upload.
+notReady :: (HasGoProAuth m, MonadIO m) => m [Medium]
+notReady = toListOf (media . folded) <$> jgetAuth "https://api.gopro.com/media/filters/not-ready?page=1&per_page=200"
 
 class HasMediaURL c where
   media_url :: Lens' c String
