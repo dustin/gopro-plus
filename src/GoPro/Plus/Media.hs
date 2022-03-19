@@ -25,7 +25,7 @@ module GoPro.Plus.Media (
   Medium(..), medium_id, medium_camera_model, medium_captured_at,
   medium_created_at, medium_file_size, medium_moments_count,
   medium_ready_to_view, medium_source_duration, medium_type,
-  medium_token, medium_width, medium_height,
+  medium_token, medium_width, medium_height, medium_filename,
   Listing(..), media, pages,
   HasMediaURL(..), HasMediaHead(..), HasMediaLabel(..), HasMediaType(..), HasMediaItemNumber(..),
   File(..), file_camera_position, file_height, file_width,
@@ -143,6 +143,7 @@ data Medium = Medium
     , _medium_token           :: String
     , _medium_width           :: Maybe Int
     , _medium_height          :: Maybe Int
+    , _medium_filename        :: Maybe String
     }
     deriving (Generic, Eq, Show)
 
