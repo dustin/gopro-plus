@@ -7,7 +7,7 @@
 --   Please see the README on GitHub at
 --   <a>https://github.com/dustin/gopro-plus#readme</a>
 @package gopro-plus
-@version 0.6.2.0
+@version 0.6.3.0
 
 
 -- | GoPro Plus authentication.
@@ -72,6 +72,12 @@ listWhile :: (HasGoProAuth m, MonadIO m) => ([Medium] -> Bool) -> m [Medium]
 -- | Get the current <a>Medium</a> record for the given Medium ID.
 medium :: (HasGoProAuth m, FromJSON j, MonadIO m) => MediumID -> m j
 
+-- | Get a list of items whose processing is failed or incomplete.
+--   
+--   This includes items that are currently uploading, or items that will
+--   not upload.
+notReady :: (HasGoProAuth m, MonadIO m) => m [Medium]
+
 -- | Get download descriptors for a given medium. The format is typically
 --   <a>FileInfo</a>, but it can be useful to map it into something else.
 retrieve :: (HasGoProAuth m, FromJSON j, MonadIO m) => MediumID -> m j
@@ -130,7 +136,7 @@ ViewUploading :: ReadyToViewType
 ViewPreTranscoding :: ReadyToViewType
 ViewUpdating :: ReadyToViewType
 data Medium
-Medium :: MediumID -> Maybe String -> UTCTime -> UTCTime -> Maybe Int -> Int -> ReadyToViewType -> Maybe String -> MediumType -> String -> Maybe Int -> Maybe Int -> Medium
+Medium :: MediumID -> Maybe String -> UTCTime -> UTCTime -> Maybe Int -> Int -> ReadyToViewType -> Maybe String -> MediumType -> String -> Maybe Int -> Maybe Int -> Maybe String -> Medium
 [_medium_id] :: Medium -> MediumID
 [_medium_camera_model] :: Medium -> Maybe String
 [_medium_captured_at] :: Medium -> UTCTime
@@ -143,6 +149,7 @@ Medium :: MediumID -> Maybe String -> UTCTime -> UTCTime -> Maybe Int -> Int -> 
 [_medium_token] :: Medium -> String
 [_medium_width] :: Medium -> Maybe Int
 [_medium_height] :: Medium -> Maybe Int
+[_medium_filename] :: Medium -> Maybe String
 medium_id :: Lens' Medium MediumID
 medium_camera_model :: Lens' Medium (Maybe String)
 medium_captured_at :: Lens' Medium UTCTime
@@ -155,6 +162,7 @@ medium_type :: Lens' Medium MediumType
 medium_token :: Lens' Medium String
 medium_width :: Lens' Medium (Maybe Int)
 medium_height :: Lens' Medium (Maybe Int)
+medium_filename :: Lens' Medium (Maybe String)
 data Listing
 Listing :: [Medium] -> PageInfo -> Listing
 [_media] :: Listing -> [Medium]
