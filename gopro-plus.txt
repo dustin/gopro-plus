@@ -411,7 +411,7 @@ instance Test.QuickCheck.Arbitrary.Arbitrary GoPro.Plus.Media.Listing
 module GoPro.Plus.Upload
 
 -- | Convenience action to upload a single medium.
-uploadMedium :: (HasGoProAuth m, MonadMask m, MonadIO m) => NonEmpty FilePath -> m MediumID
+uploadMedium :: (HasGoProAuth m, MonadMask m, MonadIO m, MonadLogger m) => NonEmpty FilePath -> m MediumID
 
 -- | Run an Uploader monad to create a single medium and upload the content
 --   for it.
@@ -441,7 +441,7 @@ completeUpload :: (HasGoProAuth m, MonadIO m) => UploadID -> DerivativeID -> Int
 getUpload :: (HasGoProAuth m, MonadIO m) => UploadID -> DerivativeID -> Int -> Int -> Uploader m Upload
 
 -- | Upload a chunk of of the given file as specified by this UploadPart.
-uploadChunk :: (MonadMask m, MonadIO m) => FilePath -> UploadPart -> Uploader m ()
+uploadChunk :: (MonadMask m, MonadIO m, MonadLogger m) => FilePath -> UploadPart -> Uploader m ()
 
 -- | Mark the given derivative as availble to use. This also updates the
 --   medium record marking it as having completed its upload.
@@ -464,14 +464,10 @@ uploadID :: Lens' Upload UploadID
 uploadParts :: Lens' Upload [UploadPart]
 
 -- | GoPro Plus uploader monad.
-type Uploader m = StateT (Env m) m
+type Uploader = StateT Env
 
 -- | Override the detected medium type.
 setMediumType :: Monad m => MediumType -> Uploader m ()
-
--- | Set the logging action to report retries (or whatever other
---   interesting things might happen).
-setLogAction :: (Monad m, MonadMask m) => (String -> m ()) -> Uploader m ()
 
 -- | Set the individual chunk size for uploading parts of media.
 setChunkSize :: (Monad m, MonadMask m) => Integer -> Uploader m ()
@@ -481,4 +477,4 @@ listUploading :: (HasGoProAuth m, MonadIO m) => m [Medium]
 instance GHC.Show.Show GoPro.Plus.Upload.Upload
 instance GHC.Show.Show GoPro.Plus.Upload.UploadPart
 instance GoPro.Plus.Auth.HasGoProAuth m => GoPro.Plus.Auth.HasGoProAuth (GoPro.Plus.Upload.Uploader m)
-instance Control.Monad.IO.Unlift.MonadUnliftIO m => Control.Monad.IO.Unlift.MonadUnliftIO (Control.Monad.Trans.State.Lazy.StateT (GoPro.Plus.Upload.Env m) m)
+instance Control.Monad.IO.Unlift.MonadUnliftIO m => Control.Monad.IO.Unlift.MonadUnliftIO (Control.Monad.Trans.State.Lazy.StateT GoPro.Plus.Upload.Env m)
