@@ -27,7 +27,7 @@ module GoPro.Plus.Upload (
   Upload(..), uploadID, uploadParts,
   -- * Uploader monad.
   Uploader,
-  setMediumType, setLogAction, setChunkSize,
+  setMediumType, setChunkSize,
   -- * For your convenience.
   listUploading
   ) where
@@ -57,21 +57,23 @@ import           System.Posix.Files           (fileSize, getFileStatus)
 import           Text.Read                    (readMaybe)
 import           UnliftIO                     (MonadUnliftIO (..))
 
+import           Control.Monad.Logger         (MonadLogger (..), logInfoN)
 import           GoPro.Plus.Auth              (AuthInfo (..), HasGoProAuth (..))
 import           GoPro.Plus.Internal.AuthHTTP
 import           GoPro.Plus.Internal.HTTP
 import           GoPro.Plus.Media             (Medium (..), MediumID, MediumType (..), ReadyToViewType (..), list,
                                                putMedium)
 
+
 type UploadID = T.Text
 type DerivativeID = T.Text
 
 -- | GoPro Plus uploader monad.
-type Uploader m = StateT (Env m) m
+type Uploader = StateT Env
 
 -- This is typically a bad idea, but we assume we only mutate state
 -- before we'd ever need an unlift.
-instance MonadUnliftIO m => MonadUnliftIO (StateT (Env m) m) where
+instance MonadUnliftIO m => MonadUnliftIO (StateT Env m) where
   withRunInIO inner =
     get >>= \st -> StateT $ \_ ->
                               withRunInIO $ \run -> (,st) <$> inner (run . flip evalStateT st)
@@ -79,14 +81,13 @@ instance MonadUnliftIO m => MonadUnliftIO (StateT (Env m) m) where
 instance HasGoProAuth m => HasGoProAuth (Uploader m) where
   goproAuth = lift goproAuth
 
-data Env m = Env {
+data Env = Env {
   fileList   :: NonEmpty FilePath,
   mediumType :: MediumType,
   extension  :: T.Text,
   filename   :: String,
   mediumID   :: MediumID,
-  chunkSize  :: Integer,
-  logAction  :: (MonadMask m, Monad m) => String -> m ()
+  chunkSize  :: Integer
   }
 
 -- | List all media in uploading state.
@@ -111,7 +112,6 @@ resumeUpload fileList@(fp :| _) mediumID a = evalStateT a Env{..}
     extension = T.pack . fmap toUpper . drop 1 . takeExtension $ filename
     filename = takeFileName fp
     mediumType = fileType extension
-    logAction _ = pure ()
     chunkSize = defaultChunkSize
 
     fileType "JPG" = Photo
@@ -121,11 +121,6 @@ resumeUpload fileList@(fp :| _) mediumID a = evalStateT a Env{..}
 -- | Override the detected medium type.
 setMediumType :: Monad m => MediumType -> Uploader m ()
 setMediumType t = modify (\m -> m{mediumType=t})
-
--- | Set the logging action to report retries (or whatever other
--- interesting things might happen).
-setLogAction :: (Monad m, MonadMask m) => (String -> m ()) -> Uploader m ()
-setLogAction t = modify (\m -> m{logAction=t})
 
 -- | Set the individual chunk size for uploading parts of media.
 setChunkSize :: (Monad m, MonadMask m) => Integer -> Uploader m ()
@@ -248,12 +243,12 @@ getUpload upid did part fsize = do
                                  (v ^? key "url" . _String . to T.unpack)
 
 -- | Upload a chunk of of the given file as specified by this UploadPart.
-uploadChunk :: (MonadMask m, MonadIO m)
+uploadChunk :: (MonadMask m, MonadIO m, MonadLogger m)
             => FilePath    -- ^ The path being uploaded.
             -> UploadPart  -- ^ The UploadPart describing the chunk of upload being transferred
             -> Uploader m ()
 uploadChunk fp UploadPart{..} = recoverAll policy $ \r -> do
-  when (rsIterNumber r > 0) $ gets logAction >>= \f -> lift (f (retryMsg (rsIterNumber r)))
+  when (rsIterNumber r > 0) $ lift (logInfoN (retryMsg (rsIterNumber r)))
   csize <- gets chunkSize
   liftIO $ withFile fp ReadMode $ \fh -> do
     hSeek fh AbsoluteSeek ((_uploadPart - 1) * csize)
@@ -262,8 +257,8 @@ uploadChunk fp UploadPart{..} = recoverAll policy $ \r -> do
     void $ putWith opts _uploadURL bytes
 
     where policy = exponentialBackoff 2000000 <> limitRetries 9
-          retryMsg a = mconcat ["Retrying upload of ", show fp,
-                                " part ", show _uploadPart, " attempt ", show a]
+          retryMsg a = T.pack $ mconcat ["Retrying upload of ", show fp,
+                                         " part ", show _uploadPart, " attempt ", show a]
 
 -- | Mark the given upload for the given derivative as complete.
 completeUpload :: (HasGoProAuth m, MonadIO m)
@@ -312,7 +307,7 @@ markAvailable did = do
     popts tok = authOpts tok & header "Accept" .~  ["application/vnd.gopro.jk.user-uploads+json; version=2.0.0"]
 
 -- | Convenience action to upload a single medium.
-uploadMedium :: (HasGoProAuth m, MonadMask m, MonadIO m)
+uploadMedium :: (HasGoProAuth m, MonadMask m, MonadIO m, MonadLogger m)
              => NonEmpty FilePath -- ^ Parts of a single medium to upload (e.g., a video file).
              -> m MediumID
 uploadMedium fps = runUpload fps $ do

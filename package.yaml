@@ -43,6 +43,7 @@ dependencies:
 - quickcheck-instances
 - generic-random
 - QuickCheck
+- monad-logger
 
 library:
   source-dirs: src

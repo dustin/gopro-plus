@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 4b8171c3664ca2d80b16127aa8c4561de17e833b114f5dce17fb18304029d77f
+-- hash: 6580bdf2327a621d02c6dcd6be6500f5daa722099d1ecf64d80215259e6451bc
 
 name:           gopro-plus
 version:        0.6.3.0
@@ -56,6 +56,7 @@ library
     , generic-random
     , lens
     , lens-aeson
+    , monad-logger
     , mtl
     , quickcheck-instances
     , random
@@ -97,6 +98,7 @@ test-suite gopro-plus-test
     , gopro-plus
     , lens
     , lens-aeson
+    , monad-logger
     , mtl
     , quickcheck-instances
     , random
