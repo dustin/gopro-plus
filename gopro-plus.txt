@@ -7,7 +7,7 @@
 --   Please see the README on GitHub at
 --   <a>https://github.com/dustin/gopro-plus#readme</a>
 @package gopro-plus
-@version 0.6.4.1
+@version 0.6.5.0
 
 
 -- | GoPro Plus authentication.
@@ -84,6 +84,9 @@ retrieve :: (HasGoProAuth m, FromJSON j, MonadIO m) => MediumID -> m j
 
 -- | Delete an item.
 delete :: (HasGoProAuth m, MonadIO m) => MediumID -> m [Error]
+
+-- | Reprocess a failed upload for the given medium ID
+reprocess :: (HasGoProAuth m, MonadIO m) => MediumID -> m ()
 
 -- | Fetch a 450px wide thumbnail data for the given medium.
 fetchThumbnail :: (HasGoProAuth m, MonadIO m) => Medium -> m ByteString
