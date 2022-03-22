@@ -17,7 +17,7 @@ module GoPro.Plus.Media (
   -- * Accessing Data
   list, listAll, listWhile, medium,
   notReady,
-  retrieve, delete,
+  retrieve, delete, reprocess,
   fetchThumbnail,
   -- * Data Types
   PageInfo(..), current_page, per_page, total_items, total_pages,
@@ -445,6 +445,10 @@ mediumURL = ("https://api.gopro.com/media/" <>) . T.unpack
 -- | Get the current 'Medium' record for the given Medium ID.
 medium :: (HasGoProAuth m, FromJSON j, MonadIO m) => MediumID -> m j
 medium = jgetAuth . mediumURL
+
+-- | Reprocess a failed upload for the given medium ID
+reprocess :: (HasGoProAuth m, MonadIO m) => MediumID -> m ()
+reprocess mid = jputAuth (mediumURL mid <> "/process") BL.empty
 
 -- | Put a Medium.  It's probably best to get a raw JSON Value and update it in place.
 putMedium :: (HasGoProAuth m, MonadIO m, Putable a) => MediumID -> a -> m ()
