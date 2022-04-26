@@ -142,7 +142,7 @@ createMedium = do
                      & at "type" ?~ J.toJSON mediumType
                      & at "on_public_profile" ?~ J.Bool False
                      & at "content_title" ?~ J.String (T.pack filename)
-                     & at "content_source" ?~ J.String "web_media_library"
+                     & at "content_source" ?~ J.String "gda"
                      & at "access_token" ?~ J.String _access_token
                      & at "gopro_user_id" ?~ J.String _resource_owner_id)
   m <- fromJust . preview (key "id" . _String) <$> jpostAuthVal "https://api.gopro.com/media" m1
