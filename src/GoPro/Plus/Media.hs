@@ -102,6 +102,10 @@ data MediumType = Photo -- ^ a still photo
     | Looped
     | LoopedVideo
     | BurstVideo
+    | Continuous
+    | ExternalVideo
+    | Session
+    | MultiClipEdit
     deriving (Bounded, Enum, Show, Read, Eq)
 
 instance ToJSON MediumType where
