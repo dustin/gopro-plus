@@ -7,7 +7,7 @@
 --   Please see the README on GitHub at
 --   <a>https://github.com/dustin/gopro-plus#readme</a>
 @package gopro-plus
-@version 0.6.5.1
+@version 0.6.6.1
 
 
 -- | GoPro Plus authentication.
@@ -128,6 +128,10 @@ Livestream :: MediumType
 Looped :: MediumType
 LoopedVideo :: MediumType
 BurstVideo :: MediumType
+Continuous :: MediumType
+ExternalVideo :: MediumType
+Session :: MediumType
+MultiClipEdit :: MediumType
 data ReadyToViewType
 ViewReady :: ReadyToViewType
 ViewFailure :: ReadyToViewType
@@ -395,6 +399,9 @@ instance GHC.Generics.Generic GoPro.Plus.Media.PageInfo
 
 -- | Arbitrary instances for GoPro.Plus
 module GoPro.Plus.Arbitrary
+aString :: Gen String
+aText :: Gen Text
+gMaybe :: Gen a -> Gen (Maybe a)
 instance Test.QuickCheck.Arbitrary.Arbitrary GoPro.Plus.Media.FileInfo
 instance Test.QuickCheck.Arbitrary.Arbitrary GoPro.Plus.Media.FileStuff
 instance Test.QuickCheck.Arbitrary.Arbitrary GoPro.Plus.Media.Variation
@@ -402,6 +409,7 @@ instance Test.QuickCheck.Arbitrary.Arbitrary GoPro.Plus.Media.SpriteFrame
 instance Test.QuickCheck.Arbitrary.Arbitrary GoPro.Plus.Media.SidecarFile
 instance Test.QuickCheck.Arbitrary.Arbitrary GoPro.Plus.Media.Sprite
 instance Test.QuickCheck.Arbitrary.Arbitrary GoPro.Plus.Media.File
+instance Test.QuickCheck.Arbitrary.Arbitrary GoPro.Plus.Auth.AuthInfo
 instance Test.QuickCheck.Arbitrary.Arbitrary GoPro.Plus.Media.Medium
 instance Test.QuickCheck.Arbitrary.Arbitrary GoPro.Plus.Media.Moment
 instance Test.QuickCheck.Arbitrary.Arbitrary GoPro.Plus.Media.ReadyToViewType
