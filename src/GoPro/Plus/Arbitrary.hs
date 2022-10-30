@@ -12,12 +12,15 @@ Arbitrary instances for GoPro.Plus
 {-# OPTIONS_GHC -Wno-orphans #-}
 module GoPro.Plus.Arbitrary where
 
+import           Data.Text                      (Text)
+import qualified Data.Text                      as T
 import           Generic.Random                 (genericArbitrary, uniform)
-import           Test.QuickCheck                (Arbitrary(..), vector, choose, arbitraryBoundedEnum)
-import           Test.QuickCheck.Instances.Text ()
+import           Test.QuickCheck                (Arbitrary (..), Gen, NonNegative (..), arbitraryBoundedEnum, choose,
+                                                 elements, listOf, oneof, vector)
 import           Test.QuickCheck.Instances.Time ()
 
-import GoPro.Plus.Media
+import           GoPro.Plus.Auth
+import           GoPro.Plus.Media
 
 instance Arbitrary FileInfo where arbitrary = genericArbitrary uniform
 
@@ -39,9 +42,34 @@ instance Arbitrary Sprite where arbitrary = genericArbitrary uniform
 
 instance Arbitrary File where arbitrary = genericArbitrary uniform
 
-instance Arbitrary Medium where arbitrary = genericArbitrary uniform
+instance Arbitrary AuthInfo where arbitrary = AuthInfo <$> aText <*> (getNonNegative <$> arbitrary) <*> aText <*> aText
 
-instance Arbitrary Moment where arbitrary = genericArbitrary uniform
+aString :: Gen String
+aString = listOf (elements (['a'..'z'] <> ['A'..'Z'] <> ['0'..'9'] <> "?<>/.\\!@#$%^&*()_-'\";:{}[]"))
+
+aText :: Gen Text
+aText = T.pack <$> aString
+
+gMaybe :: Gen a -> Gen (Maybe a)
+gMaybe a = oneof [pure Nothing, Just <$> a]
+
+instance Arbitrary Medium where
+  arbitrary = Medium
+    <$> aText
+    <*> gMaybe aString
+    <*> arbitrary
+    <*> arbitrary
+    <*> arbitrary
+    <*> arbitrary
+    <*> arbitrary
+    <*> gMaybe aString
+    <*> arbitrary
+    <*> aString
+    <*> arbitrary
+    <*> arbitrary
+    <*> gMaybe aString
+
+instance Arbitrary Moment where arbitrary = Moment <$> aText <*> arbitrary
 
 instance Arbitrary ReadyToViewType where arbitrary = arbitraryBoundedEnum
 
