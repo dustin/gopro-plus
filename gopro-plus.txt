@@ -402,6 +402,8 @@ module GoPro.Plus.Arbitrary
 aString :: Gen String
 aText :: Gen Text
 gMaybe :: Gen a -> Gen (Maybe a)
+aCamera :: Gen String
+genID :: Gen MediumID
 instance Test.QuickCheck.Arbitrary.Arbitrary GoPro.Plus.Media.FileInfo
 instance Test.QuickCheck.Arbitrary.Arbitrary GoPro.Plus.Media.FileStuff
 instance Test.QuickCheck.Arbitrary.Arbitrary GoPro.Plus.Media.Variation

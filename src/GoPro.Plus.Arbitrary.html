@@ -16,24 +16,24 @@ Arbitrary instances for GoPro.Plus
 </span><span id="line-16"></span><span class="hs-keyword">import</span><span> </span><span class="hs-keyword">qualified</span><span> </span><span class="annot"><span class="hs-identifier">Data.Text</span></span><span>                      </span><span class="hs-keyword">as</span><span> </span><span class="annot"><span class="hs-identifier">T</span></span><span>
 </span><span id="line-17"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><span class="hs-identifier">Generic.Random</span></span><span>                 </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">genericArbitrary</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">uniform</span></span><span class="hs-special">)</span><span>
 </span><span id="line-18"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><span class="hs-identifier">Test.QuickCheck</span></span><span>                </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier">Arbitrary</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">Gen</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">NonNegative</span></span><span> </span><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">arbitraryBoundedEnum</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">choose</span></span><span class="hs-special">,</span><span>
-</span><span id="line-19"></span><span>                                                 </span><span class="annot"><span class="hs-identifier">elements</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">listOf</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">oneof</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">vector</span></span><span class="hs-special">)</span><span>
+</span><span id="line-19"></span><span>                                                 </span><span class="annot"><span class="hs-identifier">elements</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">listOf</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">oneof</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">vector</span></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier">vectorOf</span></span><span class="hs-special">)</span><span>
 </span><span id="line-20"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><span class="hs-identifier">Test.QuickCheck.Instances.Time</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">)</span><span>
 </span><span id="line-21"></span><span>
 </span><span id="line-22"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><a href="GoPro.Plus.Auth.html"><span class="hs-identifier">GoPro.Plus.Auth</span></a></span><span>
 </span><span id="line-23"></span><span class="hs-keyword">import</span><span>           </span><span class="annot"><a href="GoPro.Plus.Media.html"><span class="hs-identifier">GoPro.Plus.Media</span></a></span><span>
 </span><span id="line-24"></span><span>
-</span><span id="line-25"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679347534"><span class="annot"><span class="hs-identifier hs-type">Arbitrary</span></span><span> </span><span class="annot"><a href="GoPro.Plus.Media.html#FileInfo"><span class="hs-identifier hs-type">FileInfo</span></a></span></span><span> </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621679347488"><span class="annot"><span class="annottext">arbitrary :: Gen FileInfo
+</span><span id="line-25"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679347587"><span class="annot"><span class="hs-identifier hs-type">Arbitrary</span></span><span> </span><span class="annot"><a href="GoPro.Plus.Media.html#FileInfo"><span class="hs-identifier hs-type">FileInfo</span></a></span></span><span> </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621679347541"><span class="annot"><span class="annottext">arbitrary :: Gen FileInfo
 </span><span class="hs-identifier hs-var hs-var hs-var hs-var">arbitrary</span></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Weights FileInfo -&gt; Gen FileInfo
 forall a. GArbitrary UnsizedOpts a =&gt; Weights a -&gt; Gen a
 </span><span class="hs-identifier hs-var">genericArbitrary</span></span><span> </span><span class="annot"><span class="annottext">Weights FileInfo
 forall a. UniformWeight_ (Rep a) =&gt; Weights a
 </span><span class="hs-identifier hs-var">uniform</span></span><span>
 </span><span id="line-26"></span><span>
-</span><span id="line-27"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679347484"><span class="annot"><span class="hs-identifier hs-type">Arbitrary</span></span><span> </span><span class="annot"><a href="GoPro.Plus.Media.html#FileStuff"><span class="hs-identifier hs-type">FileStuff</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-28"></span><span>  </span><span id="local-6989586621679347454"><span class="annot"><span class="annottext">arbitrary :: Gen FileStuff
-</span><a href="#local-6989586621679347454"><span class="hs-identifier hs-var hs-var hs-var hs-var">arbitrary</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-29"></span><span>    </span><span id="local-6989586621679347453"><span class="annot"><span class="annottext">[File]
-</span><a href="#local-6989586621679347453"><span class="hs-identifier hs-var">_files</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Gen [File]
+</span><span id="line-27"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679347537"><span class="annot"><span class="hs-identifier hs-type">Arbitrary</span></span><span> </span><span class="annot"><a href="GoPro.Plus.Media.html#FileStuff"><span class="hs-identifier hs-type">FileStuff</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-28"></span><span>  </span><span id="local-6989586621679347507"><span class="annot"><span class="annottext">arbitrary :: Gen FileStuff
+</span><a href="#local-6989586621679347507"><span class="hs-identifier hs-var hs-var hs-var hs-var">arbitrary</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-29"></span><span>    </span><span id="local-6989586621679347506"><span class="annot"><span class="annottext">[File]
+</span><a href="#local-6989586621679347506"><span class="hs-identifier hs-var">_files</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Gen [File]
 forall a. Arbitrary a =&gt; Int -&gt; Gen [a]
 </span><span class="hs-identifier hs-var">vector</span></span><span> </span><span class="annot"><span class="annottext">(Int -&gt; Gen [File]) -&gt; Gen Int -&gt; Gen [File]
 forall (m :: * -&gt; *) a b. Monad m =&gt; (a -&gt; m b) -&gt; m a -&gt; m b
@@ -42,8 +42,8 @@ forall a. Random a =&gt; (a, a) -&gt; Gen a
 </span><span class="hs-identifier hs-var">choose</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
 </span><span class="hs-number">0</span></span><span class="hs-special">,</span><span class="annot"><span class="annottext">Int
 </span><span class="hs-number">3</span></span><span class="hs-special">)</span><span>
-</span><span id="line-30"></span><span>    </span><span id="local-6989586621679347451"><span class="annot"><span class="annottext">[Variation]
-</span><a href="#local-6989586621679347451"><span class="hs-identifier hs-var">_variations</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Gen [Variation]
+</span><span id="line-30"></span><span>    </span><span id="local-6989586621679347504"><span class="annot"><span class="annottext">[Variation]
+</span><a href="#local-6989586621679347504"><span class="hs-identifier hs-var">_variations</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Gen [Variation]
 forall a. Arbitrary a =&gt; Int -&gt; Gen [a]
 </span><span class="hs-identifier hs-var">vector</span></span><span> </span><span class="annot"><span class="annottext">(Int -&gt; Gen [Variation]) -&gt; Gen Int -&gt; Gen [Variation]
 forall (m :: * -&gt; *) a b. Monad m =&gt; (a -&gt; m b) -&gt; m a -&gt; m b
@@ -52,8 +52,8 @@ forall a. Random a =&gt; (a, a) -&gt; Gen a
 </span><span class="hs-identifier hs-var">choose</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
 </span><span class="hs-number">0</span></span><span class="hs-special">,</span><span class="annot"><span class="annottext">Int
 </span><span class="hs-number">3</span></span><span class="hs-special">)</span><span>
-</span><span id="line-31"></span><span>    </span><span id="local-6989586621679347450"><span class="annot"><span class="annottext">[Sprite]
-</span><a href="#local-6989586621679347450"><span class="hs-identifier hs-var">_sprites</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Gen [Sprite]
+</span><span id="line-31"></span><span>    </span><span id="local-6989586621679347503"><span class="annot"><span class="annottext">[Sprite]
+</span><a href="#local-6989586621679347503"><span class="hs-identifier hs-var">_sprites</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Gen [Sprite]
 forall a. Arbitrary a =&gt; Int -&gt; Gen [a]
 </span><span class="hs-identifier hs-var">vector</span></span><span> </span><span class="annot"><span class="annottext">(Int -&gt; Gen [Sprite]) -&gt; Gen Int -&gt; Gen [Sprite]
 forall (m :: * -&gt; *) a b. Monad m =&gt; (a -&gt; m b) -&gt; m a -&gt; m b
@@ -62,8 +62,8 @@ forall a. Random a =&gt; (a, a) -&gt; Gen a
 </span><span class="hs-identifier hs-var">choose</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Int
 </span><span class="hs-number">0</span></span><span class="hs-special">,</span><span class="annot"><span class="annottext">Int
 </span><span class="hs-number">3</span></span><span class="hs-special">)</span><span>
-</span><span id="line-32"></span><span>    </span><span id="local-6989586621679347449"><span class="annot"><span class="annottext">[SidecarFile]
-</span><a href="#local-6989586621679347449"><span class="hs-identifier hs-var">_sidecar_files</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Gen [SidecarFile]
+</span><span id="line-32"></span><span>    </span><span id="local-6989586621679347502"><span class="annot"><span class="annottext">[SidecarFile]
+</span><a href="#local-6989586621679347502"><span class="hs-identifier hs-var">_sidecar_files</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">Int -&gt; Gen [SidecarFile]
 forall a. Arbitrary a =&gt; Int -&gt; Gen [a]
 </span><span class="hs-identifier hs-var">vector</span></span><span> </span><span class="annot"><span class="annottext">(Int -&gt; Gen [SidecarFile]) -&gt; Gen Int -&gt; Gen [SidecarFile]
 forall (m :: * -&gt; *) a b. Monad m =&gt; (a -&gt; m b) -&gt; m a -&gt; m b
@@ -87,45 +87,45 @@ _sidecar_files :: [SidecarFile]
 _sprites :: [Sprite]
 _variations :: [Variation]
 _files :: [File]
-</span><a href="#local-6989586621679347444"><span class="hs-glyph hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">..</span></a></span><span class="hs-special">}</span><span>
+</span><a href="#local-6989586621679347497"><span class="hs-glyph hs-var hs-var hs-var hs-var hs-var hs-var hs-var hs-var">..</span></a></span><span class="hs-special">}</span><span>
 </span><span id="line-34"></span><span>
-</span><span id="line-35"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679347441"><span class="annot"><span class="hs-identifier hs-type">Arbitrary</span></span><span> </span><span class="annot"><a href="GoPro.Plus.Media.html#Variation"><span class="hs-identifier hs-type">Variation</span></a></span></span><span> </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621679347340"><span class="annot"><span class="annottext">arbitrary :: Gen Variation
-</span><a href="#local-6989586621679347340"><span class="hs-identifier hs-var hs-var hs-var hs-var">arbitrary</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Weights Variation -&gt; Gen Variation
+</span><span id="line-35"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679347494"><span class="annot"><span class="hs-identifier hs-type">Arbitrary</span></span><span> </span><span class="annot"><a href="GoPro.Plus.Media.html#Variation"><span class="hs-identifier hs-type">Variation</span></a></span></span><span> </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621679347393"><span class="annot"><span class="annottext">arbitrary :: Gen Variation
+</span><a href="#local-6989586621679347393"><span class="hs-identifier hs-var hs-var hs-var hs-var">arbitrary</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Weights Variation -&gt; Gen Variation
 forall a. GArbitrary UnsizedOpts a =&gt; Weights a -&gt; Gen a
 </span><span class="hs-identifier hs-var">genericArbitrary</span></span><span> </span><span class="annot"><span class="annottext">Weights Variation
 forall a. UniformWeight_ (Rep a) =&gt; Weights a
 </span><span class="hs-identifier hs-var">uniform</span></span><span>
 </span><span id="line-36"></span><span>
-</span><span id="line-37"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679347337"><span class="annot"><span class="hs-identifier hs-type">Arbitrary</span></span><span> </span><span class="annot"><a href="GoPro.Plus.Media.html#SpriteFrame"><span class="hs-identifier hs-type">SpriteFrame</span></a></span></span><span> </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621679347297"><span class="annot"><span class="annottext">arbitrary :: Gen SpriteFrame
-</span><a href="#local-6989586621679347297"><span class="hs-identifier hs-var hs-var hs-var hs-var">arbitrary</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Weights SpriteFrame -&gt; Gen SpriteFrame
+</span><span id="line-37"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679347390"><span class="annot"><span class="hs-identifier hs-type">Arbitrary</span></span><span> </span><span class="annot"><a href="GoPro.Plus.Media.html#SpriteFrame"><span class="hs-identifier hs-type">SpriteFrame</span></a></span></span><span> </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621679347350"><span class="annot"><span class="annottext">arbitrary :: Gen SpriteFrame
+</span><a href="#local-6989586621679347350"><span class="hs-identifier hs-var hs-var hs-var hs-var">arbitrary</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Weights SpriteFrame -&gt; Gen SpriteFrame
 forall a. GArbitrary UnsizedOpts a =&gt; Weights a -&gt; Gen a
 </span><span class="hs-identifier hs-var">genericArbitrary</span></span><span> </span><span class="annot"><span class="annottext">Weights SpriteFrame
 forall a. UniformWeight_ (Rep a) =&gt; Weights a
 </span><span class="hs-identifier hs-var">uniform</span></span><span>
 </span><span id="line-38"></span><span>
-</span><span id="line-39"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679347294"><span class="annot"><span class="hs-identifier hs-type">Arbitrary</span></span><span> </span><span class="annot"><a href="GoPro.Plus.Media.html#SidecarFile"><span class="hs-identifier hs-type">SidecarFile</span></a></span></span><span> </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621679347222"><span class="annot"><span class="annottext">arbitrary :: Gen SidecarFile
-</span><a href="#local-6989586621679347222"><span class="hs-identifier hs-var hs-var hs-var hs-var">arbitrary</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Weights SidecarFile -&gt; Gen SidecarFile
+</span><span id="line-39"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679347347"><span class="annot"><span class="hs-identifier hs-type">Arbitrary</span></span><span> </span><span class="annot"><a href="GoPro.Plus.Media.html#SidecarFile"><span class="hs-identifier hs-type">SidecarFile</span></a></span></span><span> </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621679347275"><span class="annot"><span class="annottext">arbitrary :: Gen SidecarFile
+</span><a href="#local-6989586621679347275"><span class="hs-identifier hs-var hs-var hs-var hs-var">arbitrary</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Weights SidecarFile -&gt; Gen SidecarFile
 forall a. GArbitrary UnsizedOpts a =&gt; Weights a -&gt; Gen a
 </span><span class="hs-identifier hs-var">genericArbitrary</span></span><span> </span><span class="annot"><span class="annottext">Weights SidecarFile
 forall a. UniformWeight_ (Rep a) =&gt; Weights a
 </span><span class="hs-identifier hs-var">uniform</span></span><span>
 </span><span id="line-40"></span><span>
-</span><span id="line-41"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679347219"><span class="annot"><span class="hs-identifier hs-type">Arbitrary</span></span><span> </span><span class="annot"><a href="GoPro.Plus.Media.html#Sprite"><span class="hs-identifier hs-type">Sprite</span></a></span></span><span> </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621679347138"><span class="annot"><span class="annottext">arbitrary :: Gen Sprite
-</span><a href="#local-6989586621679347138"><span class="hs-identifier hs-var hs-var hs-var hs-var">arbitrary</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Weights Sprite -&gt; Gen Sprite
+</span><span id="line-41"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679347272"><span class="annot"><span class="hs-identifier hs-type">Arbitrary</span></span><span> </span><span class="annot"><a href="GoPro.Plus.Media.html#Sprite"><span class="hs-identifier hs-type">Sprite</span></a></span></span><span> </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621679347191"><span class="annot"><span class="annottext">arbitrary :: Gen Sprite
+</span><a href="#local-6989586621679347191"><span class="hs-identifier hs-var hs-var hs-var hs-var">arbitrary</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Weights Sprite -&gt; Gen Sprite
 forall a. GArbitrary UnsizedOpts a =&gt; Weights a -&gt; Gen a
 </span><span class="hs-identifier hs-var">genericArbitrary</span></span><span> </span><span class="annot"><span class="annottext">Weights Sprite
 forall a. UniformWeight_ (Rep a) =&gt; Weights a
 </span><span class="hs-identifier hs-var">uniform</span></span><span>
 </span><span id="line-42"></span><span>
-</span><span id="line-43"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679347135"><span class="annot"><span class="hs-identifier hs-type">Arbitrary</span></span><span> </span><span class="annot"><a href="GoPro.Plus.Media.html#File"><span class="hs-identifier hs-type">File</span></a></span></span><span> </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621679347046"><span class="annot"><span class="annottext">arbitrary :: Gen File
-</span><a href="#local-6989586621679347046"><span class="hs-identifier hs-var hs-var hs-var hs-var">arbitrary</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Weights File -&gt; Gen File
+</span><span id="line-43"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679347188"><span class="annot"><span class="hs-identifier hs-type">Arbitrary</span></span><span> </span><span class="annot"><a href="GoPro.Plus.Media.html#File"><span class="hs-identifier hs-type">File</span></a></span></span><span> </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621679347099"><span class="annot"><span class="annottext">arbitrary :: Gen File
+</span><a href="#local-6989586621679347099"><span class="hs-identifier hs-var hs-var hs-var hs-var">arbitrary</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Weights File -&gt; Gen File
 forall a. GArbitrary UnsizedOpts a =&gt; Weights a -&gt; Gen a
 </span><span class="hs-identifier hs-var">genericArbitrary</span></span><span> </span><span class="annot"><span class="annottext">Weights File
 forall a. UniformWeight_ (Rep a) =&gt; Weights a
 </span><span class="hs-identifier hs-var">uniform</span></span><span>
 </span><span id="line-44"></span><span>
-</span><span id="line-45"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679347043"><span class="annot"><span class="hs-identifier hs-type">Arbitrary</span></span><span> </span><span class="annot"><a href="GoPro.Plus.Auth.html#AuthInfo"><span class="hs-identifier hs-type">AuthInfo</span></a></span></span><span> </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621679347031"><span class="annot"><span class="annottext">arbitrary :: Gen AuthInfo
-</span><a href="#local-6989586621679347031"><span class="hs-identifier hs-var hs-var hs-var hs-var">arbitrary</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Token -&gt; Int -&gt; Token -&gt; Token -&gt; AuthInfo
+</span><span id="line-45"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679347096"><span class="annot"><span class="hs-identifier hs-type">Arbitrary</span></span><span> </span><span class="annot"><a href="GoPro.Plus.Auth.html#AuthInfo"><span class="hs-identifier hs-type">AuthInfo</span></a></span></span><span> </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621679347084"><span class="annot"><span class="annottext">arbitrary :: Gen AuthInfo
+</span><a href="#local-6989586621679347084"><span class="hs-identifier hs-var hs-var hs-var hs-var">arbitrary</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Token -&gt; Int -&gt; Token -&gt; Token -&gt; AuthInfo
 </span><a href="GoPro.Plus.Auth.html#AuthInfo"><span class="hs-identifier hs-var">AuthInfo</span></a></span><span> </span><span class="annot"><span class="annottext">(Token -&gt; Int -&gt; Token -&gt; Token -&gt; AuthInfo)
 -&gt; Gen Token -&gt; Gen (Int -&gt; Token -&gt; Token -&gt; AuthInfo)
 forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
@@ -177,10 +177,10 @@ forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
 </span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">Gen [Char]
 </span><a href="GoPro.Plus.Arbitrary.html#aString"><span class="hs-identifier hs-var">aString</span></a></span><span>
 </span><span id="line-52"></span><span>
-</span><span id="line-53"></span><span id="local-6989586621679347592"><span class="annot"><a href="GoPro.Plus.Arbitrary.html#gMaybe"><span class="hs-identifier hs-type">gMaybe</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Gen</span></span><span> </span><span class="annot"><a href="#local-6989586621679347592"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Gen</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><a href="#local-6989586621679347592"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span></span><span>
+</span><span id="line-53"></span><span id="local-6989586621679347661"><span class="annot"><a href="GoPro.Plus.Arbitrary.html#gMaybe"><span class="hs-identifier hs-type">gMaybe</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Gen</span></span><span> </span><span class="annot"><a href="#local-6989586621679347661"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Gen</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">Maybe</span></span><span> </span><span class="annot"><a href="#local-6989586621679347661"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span></span><span>
 </span><span id="line-54"></span><span id="gMaybe"><span class="annot"><span class="annottext">gMaybe :: forall a. Gen a -&gt; Gen (Maybe a)
-</span><a href="GoPro.Plus.Arbitrary.html#gMaybe"><span class="hs-identifier hs-var hs-var">gMaybe</span></a></span></span><span> </span><span id="local-6989586621679347021"><span class="annot"><span class="annottext">Gen a
-</span><a href="#local-6989586621679347021"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Gen (Maybe a)] -&gt; Gen (Maybe a)
+</span><a href="GoPro.Plus.Arbitrary.html#gMaybe"><span class="hs-identifier hs-var hs-var">gMaybe</span></a></span></span><span> </span><span id="local-6989586621679347074"><span class="annot"><span class="annottext">Gen a
+</span><a href="#local-6989586621679347074"><span class="hs-identifier hs-var">a</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Gen (Maybe a)] -&gt; Gen (Maybe a)
 forall a. [Gen a] -&gt; Gen a
 </span><span class="hs-identifier hs-var">oneof</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Maybe a -&gt; Gen (Maybe a)
 forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
@@ -191,11 +191,55 @@ forall a. a -&gt; Maybe a
 </span><span class="hs-identifier hs-var">Just</span></span><span> </span><span class="annot"><span class="annottext">(a -&gt; Maybe a) -&gt; Gen a -&gt; Gen (Maybe a)
 forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
 </span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">Gen a
-</span><a href="#local-6989586621679347021"><span class="hs-identifier hs-var">a</span></a></span><span class="hs-special">]</span><span>
+</span><a href="#local-6989586621679347074"><span class="hs-identifier hs-var">a</span></a></span><span class="hs-special">]</span><span>
 </span><span id="line-55"></span><span>
-</span><span id="line-56"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679347018"><span class="annot"><span class="hs-identifier hs-type">Arbitrary</span></span><span> </span><span class="annot"><a href="GoPro.Plus.Media.html#Medium"><span class="hs-identifier hs-type">Medium</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
-</span><span id="line-57"></span><span>  </span><span id="local-6989586621679346994"><span class="annot"><span class="annottext">arbitrary :: Gen Medium
-</span><a href="#local-6989586621679346994"><span class="hs-identifier hs-var hs-var hs-var hs-var">arbitrary</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Token
+</span><span id="line-56"></span><span class="annot"><a href="GoPro.Plus.Arbitrary.html#aCamera"><span class="hs-identifier hs-type">aCamera</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Gen</span></span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span>
+</span><span id="line-57"></span><span id="aCamera"><span class="annot"><span class="annottext">aCamera :: Gen [Char]
+</span><a href="GoPro.Plus.Arbitrary.html#aCamera"><span class="hs-identifier hs-var hs-var">aCamera</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[[Char]] -&gt; Gen [Char]
+forall a. [a] -&gt; Gen a
+</span><span class="hs-identifier hs-var">elements</span></span><span> </span><span class="hs-special">[</span><span>
+</span><span id="line-58"></span><span>  </span><span class="annot"><span class="annottext">[Char]
+</span><span class="hs-string">&quot;GoPro Max&quot;</span></span><span class="hs-special">,</span><span>
+</span><span id="line-59"></span><span>  </span><span class="annot"><span class="annottext">[Char]
+</span><span class="hs-string">&quot;HERO11 Black&quot;</span></span><span class="hs-special">,</span><span>
+</span><span id="line-60"></span><span>  </span><span class="annot"><span class="annottext">[Char]
+</span><span class="hs-string">&quot;HERO3+Silver Edition&quot;</span></span><span class="hs-special">,</span><span>
+</span><span id="line-61"></span><span>  </span><span class="annot"><span class="annottext">[Char]
+</span><span class="hs-string">&quot;HERO4 Black&quot;</span></span><span class="hs-special">,</span><span>
+</span><span id="line-62"></span><span>  </span><span class="annot"><span class="annottext">[Char]
+</span><span class="hs-string">&quot;HERO5 Black&quot;</span></span><span class="hs-special">,</span><span>
+</span><span id="line-63"></span><span>  </span><span class="annot"><span class="annottext">[Char]
+</span><span class="hs-string">&quot;HERO5 Session&quot;</span></span><span class="hs-special">,</span><span>
+</span><span id="line-64"></span><span>  </span><span class="annot"><span class="annottext">[Char]
+</span><span class="hs-string">&quot;HERO8 Black&quot;</span></span><span class="hs-special">,</span><span>
+</span><span id="line-65"></span><span>  </span><span class="annot"><span class="annottext">[Char]
+</span><span class="hs-string">&quot;HERO9 Black&quot;</span></span><span class="hs-special">]</span><span>
+</span><span id="line-66"></span><span>
+</span><span id="line-67"></span><span class="annot"><a href="GoPro.Plus.Arbitrary.html#genID"><span class="hs-identifier hs-type">genID</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Gen</span></span><span> </span><span class="annot"><a href="GoPro.Plus.Media.html#MediumID"><span class="hs-identifier hs-type">MediumID</span></a></span><span>
+</span><span id="line-68"></span><span id="genID"><span class="annot"><span class="annottext">genID :: Gen Token
+</span><a href="GoPro.Plus.Arbitrary.html#genID"><span class="hs-identifier hs-var hs-var">genID</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; Token
+</span><span class="hs-identifier hs-var">T.pack</span></span><span> </span><span class="annot"><span class="annottext">([Char] -&gt; Token) -&gt; Gen [Char] -&gt; Gen Token
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">Int -&gt; Gen Char -&gt; Gen [Char]
+forall a. Int -&gt; Gen a -&gt; Gen [a]
+</span><span class="hs-identifier hs-var">vectorOf</span></span><span> </span><span class="annot"><span class="annottext">Int
+</span><span class="hs-number">13</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">[Char] -&gt; Gen Char
+forall a. [a] -&gt; Gen a
+</span><span class="hs-identifier hs-var">elements</span></span><span> </span><span class="hs-special">(</span><span class="hs-special">[</span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'a'</span></span><span class="hs-glyph">..</span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'z'</span></span><span class="hs-special">]</span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; [Char] -&gt; [Char]
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'A'</span></span><span class="hs-glyph">..</span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'Z'</span></span><span class="hs-special">]</span><span> </span><span class="annot"><span class="annottext">[Char] -&gt; [Char] -&gt; [Char]
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'0'</span></span><span class="hs-glyph">..</span><span class="annot"><span class="annottext">Char
+</span><span class="hs-char">'9'</span></span><span class="hs-special">]</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><span id="line-69"></span><span>
+</span><span id="line-70"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679347068"><span class="annot"><span class="hs-identifier hs-type">Arbitrary</span></span><span> </span><span class="annot"><a href="GoPro.Plus.Media.html#Medium"><span class="hs-identifier hs-type">Medium</span></a></span></span><span> </span><span class="hs-keyword">where</span><span>
+</span><span id="line-71"></span><span>  </span><span id="local-6989586621679347044"><span class="annot"><span class="annottext">arbitrary :: Gen Medium
+</span><a href="#local-6989586621679347044"><span class="hs-identifier hs-var hs-var hs-var hs-var">arbitrary</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Token
 -&gt; Maybe [Char]
 -&gt; UTCTime
 -&gt; UTCTime
@@ -210,7 +254,7 @@ forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
 -&gt; Maybe [Char]
 -&gt; Medium
 </span><a href="GoPro.Plus.Media.html#Medium"><span class="hs-identifier hs-var">Medium</span></a></span><span>
-</span><span id="line-58"></span><span>    </span><span class="annot"><span class="annottext">(Token
+</span><span id="line-72"></span><span>    </span><span class="annot"><span class="annottext">(Token
  -&gt; Maybe [Char]
  -&gt; UTCTime
  -&gt; UTCTime
@@ -241,8 +285,8 @@ forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
       -&gt; Medium)
 forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
 </span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">Gen Token
-</span><a href="GoPro.Plus.Arbitrary.html#aText"><span class="hs-identifier hs-var">aText</span></a></span><span>
-</span><span id="line-59"></span><span>    </span><span class="annot"><span class="annottext">Gen
+</span><a href="GoPro.Plus.Arbitrary.html#genID"><span class="hs-identifier hs-var">genID</span></a></span><span>
+</span><span id="line-73"></span><span>    </span><span class="annot"><span class="annottext">Gen
   (Maybe [Char]
    -&gt; UTCTime
    -&gt; UTCTime
@@ -274,8 +318,8 @@ forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f
 </span><span class="hs-operator hs-var">&lt;*&gt;</span></span><span> </span><span class="annot"><span class="annottext">Gen [Char] -&gt; Gen (Maybe [Char])
 forall a. Gen a -&gt; Gen (Maybe a)
 </span><a href="GoPro.Plus.Arbitrary.html#gMaybe"><span class="hs-identifier hs-var">gMaybe</span></a></span><span> </span><span class="annot"><span class="annottext">Gen [Char]
-</span><a href="GoPro.Plus.Arbitrary.html#aString"><span class="hs-identifier hs-var">aString</span></a></span><span>
-</span><span id="line-60"></span><span>    </span><span class="annot"><span class="annottext">Gen
+</span><a href="GoPro.Plus.Arbitrary.html#aCamera"><span class="hs-identifier hs-var">aCamera</span></a></span><span>
+</span><span id="line-74"></span><span>    </span><span class="annot"><span class="annottext">Gen
   (UTCTime
    -&gt; UTCTime
    -&gt; Maybe Int
@@ -305,7 +349,7 @@ forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f
 </span><span class="hs-operator hs-var">&lt;*&gt;</span></span><span> </span><span class="annot"><span class="annottext">Gen UTCTime
 forall a. Arbitrary a =&gt; Gen a
 </span><span class="hs-identifier hs-var">arbitrary</span></span><span>
-</span><span id="line-61"></span><span>    </span><span class="annot"><span class="annottext">Gen
+</span><span id="line-75"></span><span>    </span><span class="annot"><span class="annottext">Gen
   (UTCTime
    -&gt; Maybe Int
    -&gt; Int
@@ -333,7 +377,7 @@ forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f
 </span><span class="hs-operator hs-var">&lt;*&gt;</span></span><span> </span><span class="annot"><span class="annottext">Gen UTCTime
 forall a. Arbitrary a =&gt; Gen a
 </span><span class="hs-identifier hs-var">arbitrary</span></span><span>
-</span><span id="line-62"></span><span>    </span><span class="annot"><span class="annottext">Gen
+</span><span id="line-76"></span><span>    </span><span class="annot"><span class="annottext">Gen
   (Maybe Int
    -&gt; Int
    -&gt; ReadyToViewType
@@ -359,7 +403,7 @@ forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f
 </span><span class="hs-operator hs-var">&lt;*&gt;</span></span><span> </span><span class="annot"><span class="annottext">Gen (Maybe Int)
 forall a. Arbitrary a =&gt; Gen a
 </span><span class="hs-identifier hs-var">arbitrary</span></span><span>
-</span><span id="line-63"></span><span>    </span><span class="annot"><span class="annottext">Gen
+</span><span id="line-77"></span><span>    </span><span class="annot"><span class="annottext">Gen
   (Int
    -&gt; ReadyToViewType
    -&gt; Maybe [Char]
@@ -383,7 +427,7 @@ forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f
 </span><span class="hs-operator hs-var">&lt;*&gt;</span></span><span> </span><span class="annot"><span class="annottext">Gen Int
 forall a. Arbitrary a =&gt; Gen a
 </span><span class="hs-identifier hs-var">arbitrary</span></span><span>
-</span><span id="line-64"></span><span>    </span><span class="annot"><span class="annottext">Gen
+</span><span id="line-78"></span><span>    </span><span class="annot"><span class="annottext">Gen
   (ReadyToViewType
    -&gt; Maybe [Char]
    -&gt; MediumType
@@ -405,7 +449,7 @@ forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f
 </span><span class="hs-operator hs-var">&lt;*&gt;</span></span><span> </span><span class="annot"><span class="annottext">Gen ReadyToViewType
 forall a. Arbitrary a =&gt; Gen a
 </span><span class="hs-identifier hs-var">arbitrary</span></span><span>
-</span><span id="line-65"></span><span>    </span><span class="annot"><span class="annottext">Gen
+</span><span id="line-79"></span><span>    </span><span class="annot"><span class="annottext">Gen
   (Maybe [Char]
    -&gt; MediumType
    -&gt; [Char]
@@ -422,7 +466,7 @@ forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f
 forall a. Gen a -&gt; Gen (Maybe a)
 </span><a href="GoPro.Plus.Arbitrary.html#gMaybe"><span class="hs-identifier hs-var">gMaybe</span></a></span><span> </span><span class="annot"><span class="annottext">Gen [Char]
 </span><a href="GoPro.Plus.Arbitrary.html#aString"><span class="hs-identifier hs-var">aString</span></a></span><span>
-</span><span id="line-66"></span><span>    </span><span class="annot"><span class="annottext">Gen
+</span><span id="line-80"></span><span>    </span><span class="annot"><span class="annottext">Gen
   (MediumType
    -&gt; [Char] -&gt; Maybe Int -&gt; Maybe Int -&gt; Maybe [Char] -&gt; Medium)
 -&gt; Gen MediumType
@@ -431,33 +475,33 @@ forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f
 </span><span class="hs-operator hs-var">&lt;*&gt;</span></span><span> </span><span class="annot"><span class="annottext">Gen MediumType
 forall a. Arbitrary a =&gt; Gen a
 </span><span class="hs-identifier hs-var">arbitrary</span></span><span>
-</span><span id="line-67"></span><span>    </span><span class="annot"><span class="annottext">Gen ([Char] -&gt; Maybe Int -&gt; Maybe Int -&gt; Maybe [Char] -&gt; Medium)
+</span><span id="line-81"></span><span>    </span><span class="annot"><span class="annottext">Gen ([Char] -&gt; Maybe Int -&gt; Maybe Int -&gt; Maybe [Char] -&gt; Medium)
 -&gt; Gen [Char]
 -&gt; Gen (Maybe Int -&gt; Maybe Int -&gt; Maybe [Char] -&gt; Medium)
 forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f b
 </span><span class="hs-operator hs-var">&lt;*&gt;</span></span><span> </span><span class="annot"><span class="annottext">Gen [Char]
 </span><a href="GoPro.Plus.Arbitrary.html#aString"><span class="hs-identifier hs-var">aString</span></a></span><span>
-</span><span id="line-68"></span><span>    </span><span class="annot"><span class="annottext">Gen (Maybe Int -&gt; Maybe Int -&gt; Maybe [Char] -&gt; Medium)
+</span><span id="line-82"></span><span>    </span><span class="annot"><span class="annottext">Gen (Maybe Int -&gt; Maybe Int -&gt; Maybe [Char] -&gt; Medium)
 -&gt; Gen (Maybe Int) -&gt; Gen (Maybe Int -&gt; Maybe [Char] -&gt; Medium)
 forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f b
 </span><span class="hs-operator hs-var">&lt;*&gt;</span></span><span> </span><span class="annot"><span class="annottext">Gen (Maybe Int)
 forall a. Arbitrary a =&gt; Gen a
 </span><span class="hs-identifier hs-var">arbitrary</span></span><span>
-</span><span id="line-69"></span><span>    </span><span class="annot"><span class="annottext">Gen (Maybe Int -&gt; Maybe [Char] -&gt; Medium)
+</span><span id="line-83"></span><span>    </span><span class="annot"><span class="annottext">Gen (Maybe Int -&gt; Maybe [Char] -&gt; Medium)
 -&gt; Gen (Maybe Int) -&gt; Gen (Maybe [Char] -&gt; Medium)
 forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f b
 </span><span class="hs-operator hs-var">&lt;*&gt;</span></span><span> </span><span class="annot"><span class="annottext">Gen (Maybe Int)
 forall a. Arbitrary a =&gt; Gen a
 </span><span class="hs-identifier hs-var">arbitrary</span></span><span>
-</span><span id="line-70"></span><span>    </span><span class="annot"><span class="annottext">Gen (Maybe [Char] -&gt; Medium) -&gt; Gen (Maybe [Char]) -&gt; Gen Medium
+</span><span id="line-84"></span><span>    </span><span class="annot"><span class="annottext">Gen (Maybe [Char] -&gt; Medium) -&gt; Gen (Maybe [Char]) -&gt; Gen Medium
 forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f b
 </span><span class="hs-operator hs-var">&lt;*&gt;</span></span><span> </span><span class="annot"><span class="annottext">Gen [Char] -&gt; Gen (Maybe [Char])
 forall a. Gen a -&gt; Gen (Maybe a)
 </span><a href="GoPro.Plus.Arbitrary.html#gMaybe"><span class="hs-identifier hs-var">gMaybe</span></a></span><span> </span><span class="annot"><span class="annottext">Gen [Char]
 </span><a href="GoPro.Plus.Arbitrary.html#aString"><span class="hs-identifier hs-var">aString</span></a></span><span>
-</span><span id="line-71"></span><span>
-</span><span id="line-72"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679346990"><span class="annot"><span class="hs-identifier hs-type">Arbitrary</span></span><span> </span><span class="annot"><a href="GoPro.Plus.Media.html#Moment"><span class="hs-identifier hs-type">Moment</span></a></span></span><span> </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621679346985"><span class="annot"><span class="annottext">arbitrary :: Gen Moment
-</span><a href="#local-6989586621679346985"><span class="hs-identifier hs-var hs-var hs-var hs-var">arbitrary</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Token -&gt; Maybe Int -&gt; Moment
+</span><span id="line-85"></span><span>
+</span><span id="line-86"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679347040"><span class="annot"><span class="hs-identifier hs-type">Arbitrary</span></span><span> </span><span class="annot"><a href="GoPro.Plus.Media.html#Moment"><span class="hs-identifier hs-type">Moment</span></a></span></span><span> </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621679347035"><span class="annot"><span class="annottext">arbitrary :: Gen Moment
+</span><a href="#local-6989586621679347035"><span class="hs-identifier hs-var hs-var hs-var hs-var">arbitrary</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Token -&gt; Maybe Int -&gt; Moment
 </span><a href="GoPro.Plus.Media.html#Moment"><span class="hs-identifier hs-var">Moment</span></a></span><span> </span><span class="annot"><span class="annottext">(Token -&gt; Maybe Int -&gt; Moment)
 -&gt; Gen Token -&gt; Gen (Maybe Int -&gt; Moment)
 forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
@@ -467,28 +511,28 @@ forall (f :: * -&gt; *) a b. Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f
 </span><span class="hs-operator hs-var">&lt;*&gt;</span></span><span> </span><span class="annot"><span class="annottext">Gen (Maybe Int)
 forall a. Arbitrary a =&gt; Gen a
 </span><span class="hs-identifier hs-var">arbitrary</span></span><span>
-</span><span id="line-73"></span><span>
-</span><span id="line-74"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679346981"><span class="annot"><span class="hs-identifier hs-type">Arbitrary</span></span><span> </span><span class="annot"><a href="GoPro.Plus.Media.html#ReadyToViewType"><span class="hs-identifier hs-type">ReadyToViewType</span></a></span></span><span> </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621679346976"><span class="annot"><span class="annottext">arbitrary :: Gen ReadyToViewType
-</span><a href="#local-6989586621679346976"><span class="hs-identifier hs-var hs-var hs-var hs-var">arbitrary</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Gen ReadyToViewType
+</span><span id="line-87"></span><span>
+</span><span id="line-88"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679347031"><span class="annot"><span class="hs-identifier hs-type">Arbitrary</span></span><span> </span><span class="annot"><a href="GoPro.Plus.Media.html#ReadyToViewType"><span class="hs-identifier hs-type">ReadyToViewType</span></a></span></span><span> </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621679347026"><span class="annot"><span class="annottext">arbitrary :: Gen ReadyToViewType
+</span><a href="#local-6989586621679347026"><span class="hs-identifier hs-var hs-var hs-var hs-var">arbitrary</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Gen ReadyToViewType
 forall a. (Bounded a, Enum a) =&gt; Gen a
 </span><span class="hs-identifier hs-var">arbitraryBoundedEnum</span></span><span>
-</span><span id="line-75"></span><span>
-</span><span id="line-76"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679346973"><span class="annot"><span class="hs-identifier hs-type">Arbitrary</span></span><span> </span><span class="annot"><a href="GoPro.Plus.Media.html#MediumType"><span class="hs-identifier hs-type">MediumType</span></a></span></span><span> </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621679346968"><span class="annot"><span class="annottext">arbitrary :: Gen MediumType
-</span><a href="#local-6989586621679346968"><span class="hs-identifier hs-var hs-var hs-var hs-var">arbitrary</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Gen MediumType
+</span><span id="line-89"></span><span>
+</span><span id="line-90"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679347023"><span class="annot"><span class="hs-identifier hs-type">Arbitrary</span></span><span> </span><span class="annot"><a href="GoPro.Plus.Media.html#MediumType"><span class="hs-identifier hs-type">MediumType</span></a></span></span><span> </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621679347018"><span class="annot"><span class="annottext">arbitrary :: Gen MediumType
+</span><a href="#local-6989586621679347018"><span class="hs-identifier hs-var hs-var hs-var hs-var">arbitrary</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Gen MediumType
 forall a. (Bounded a, Enum a) =&gt; Gen a
 </span><span class="hs-identifier hs-var">arbitraryBoundedEnum</span></span><span>
-</span><span id="line-77"></span><span>
-</span><span id="line-78"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679346965"><span class="annot"><span class="hs-identifier hs-type">Arbitrary</span></span><span> </span><span class="annot"><a href="GoPro.Plus.Media.html#PageInfo"><span class="hs-identifier hs-type">PageInfo</span></a></span></span><span> </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621679346916"><span class="annot"><span class="annottext">arbitrary :: Gen PageInfo
-</span><a href="#local-6989586621679346916"><span class="hs-identifier hs-var hs-var hs-var hs-var">arbitrary</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Weights PageInfo -&gt; Gen PageInfo
+</span><span id="line-91"></span><span>
+</span><span id="line-92"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679347015"><span class="annot"><span class="hs-identifier hs-type">Arbitrary</span></span><span> </span><span class="annot"><a href="GoPro.Plus.Media.html#PageInfo"><span class="hs-identifier hs-type">PageInfo</span></a></span></span><span> </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621679346966"><span class="annot"><span class="annottext">arbitrary :: Gen PageInfo
+</span><a href="#local-6989586621679346966"><span class="hs-identifier hs-var hs-var hs-var hs-var">arbitrary</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Weights PageInfo -&gt; Gen PageInfo
 forall a. GArbitrary UnsizedOpts a =&gt; Weights a -&gt; Gen a
 </span><span class="hs-identifier hs-var">genericArbitrary</span></span><span> </span><span class="annot"><span class="annottext">Weights PageInfo
 forall a. UniformWeight_ (Rep a) =&gt; Weights a
 </span><span class="hs-identifier hs-var">uniform</span></span><span>
-</span><span id="line-79"></span><span>
-</span><span id="line-80"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679346913"><span class="annot"><span class="hs-identifier hs-type">Arbitrary</span></span><span> </span><span class="annot"><a href="GoPro.Plus.Media.html#Listing"><span class="hs-identifier hs-type">Listing</span></a></span></span><span> </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621679346880"><span class="annot"><span class="annottext">arbitrary :: Gen Listing
-</span><a href="#local-6989586621679346880"><span class="hs-identifier hs-var hs-var hs-var hs-var">arbitrary</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Weights Listing -&gt; Gen Listing
+</span><span id="line-93"></span><span>
+</span><span id="line-94"></span><span class="hs-keyword">instance</span><span> </span><span id="local-6989586621679346963"><span class="annot"><span class="hs-identifier hs-type">Arbitrary</span></span><span> </span><span class="annot"><a href="GoPro.Plus.Media.html#Listing"><span class="hs-identifier hs-type">Listing</span></a></span></span><span> </span><span class="hs-keyword">where</span><span> </span><span id="local-6989586621679346930"><span class="annot"><span class="annottext">arbitrary :: Gen Listing
+</span><a href="#local-6989586621679346930"><span class="hs-identifier hs-var hs-var hs-var hs-var">arbitrary</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Weights Listing -&gt; Gen Listing
 forall a. GArbitrary UnsizedOpts a =&gt; Weights a -&gt; Gen a
 </span><span class="hs-identifier hs-var">genericArbitrary</span></span><span> </span><span class="annot"><span class="annottext">Weights Listing
 forall a. UniformWeight_ (Rep a) =&gt; Weights a
 </span><span class="hs-identifier hs-var">uniform</span></span><span>
-</span><span id="line-81"></span></pre></body></html>
+</span><span id="line-95"></span></pre></body></html>
