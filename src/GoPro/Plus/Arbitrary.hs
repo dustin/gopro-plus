@@ -16,7 +16,7 @@ import           Data.Text                      (Text)
 import qualified Data.Text                      as T
 import           Generic.Random                 (genericArbitrary, uniform)
 import           Test.QuickCheck                (Arbitrary (..), Gen, NonNegative (..), arbitraryBoundedEnum, choose,
-                                                 elements, listOf, oneof, vector)
+                                                 elements, listOf, oneof, vector, vectorOf)
 import           Test.QuickCheck.Instances.Time ()
 
 import           GoPro.Plus.Auth
@@ -53,10 +53,24 @@ aText = T.pack <$> aString
 gMaybe :: Gen a -> Gen (Maybe a)
 gMaybe a = oneof [pure Nothing, Just <$> a]
 
+aCamera :: Gen String
+aCamera = elements [
+  "GoPro Max",
+  "HERO11 Black",
+  "HERO3+Silver Edition",
+  "HERO4 Black",
+  "HERO5 Black",
+  "HERO5 Session",
+  "HERO8 Black",
+  "HERO9 Black"]
+
+genID :: Gen MediumID
+genID = T.pack <$> vectorOf 13 (elements (['a'..'z'] <> ['A'..'Z'] <> ['0'..'9']))
+
 instance Arbitrary Medium where
   arbitrary = Medium
-    <$> aText
-    <*> gMaybe aString
+    <$> genID
+    <*> gMaybe aCamera
     <*> arbitrary
     <*> arbitrary
     <*> arbitrary
