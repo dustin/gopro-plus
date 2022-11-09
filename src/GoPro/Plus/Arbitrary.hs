@@ -73,14 +73,14 @@ instance Arbitrary Medium where
     <*> gMaybe aCamera
     <*> arbitrary
     <*> arbitrary
-    <*> arbitrary
-    <*> arbitrary
+    <*> (fmap getNonNegative <$> arbitrary)
+    <*> (getNonNegative <$> arbitrary)
     <*> arbitrary
     <*> gMaybe aString
     <*> arbitrary
     <*> aString
-    <*> arbitrary
-    <*> arbitrary
+    <*> (fmap getNonNegative <$> arbitrary)
+    <*> (fmap getNonNegative <$> arbitrary)
     <*> gMaybe aString
 
 instance Arbitrary Moment where arbitrary = Moment <$> aText <*> arbitrary
