@@ -1,3 +1,6 @@
 *~
 .stack-work/
 /stack.yaml.lock
+flake.lock
+.direnv
+.DS_Store
