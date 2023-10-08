@@ -210,7 +210,7 @@ listAll = listWhile (const True)
 
 -- | List all media while returned batches pass the given predicate.
 listWhile :: (HasGoProAuth m, MonadIO m) => ([Medium] -> Bool) -> m [Medium]
-listWhile f = Map.elems <$> dig 0 mempty
+listWhile f = Map.elems <$> dig 1 mempty
     where
       dig n m = do
         (ms, _) <- list 100 n
