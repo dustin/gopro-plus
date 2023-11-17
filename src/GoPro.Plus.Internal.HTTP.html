@@ -20,54 +20,83 @@
 </span><span id="line-18"></span><span class="annot"><a href="GoPro.Plus.Internal.HTTP.html#defOpts"><span class="hs-identifier hs-type">defOpts</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Network.Wreq.Options</span></span><span>
 </span><span id="line-19"></span><span id="defOpts"><span class="annot"><span class="annottext">defOpts :: Options
 </span><a href="GoPro.Plus.Internal.HTTP.html#defOpts"><span class="hs-identifier hs-var hs-var">defOpts</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options
-</span><span class="hs-identifier hs-var">defaults</span></span><span> </span><span class="annot"><span class="annottext">forall a b. a -&gt; (a -&gt; b) -&gt; b
+</span><span class="hs-identifier hs-var">defaults</span></span><span> </span><span class="annot"><span class="annottext">Options -&gt; (Options -&gt; Options) -&gt; Options
+forall a b. a -&gt; (a -&gt; b) -&gt; b
 </span><span class="hs-operator hs-var">&amp;</span></span><span> </span><span class="annot"><span class="annottext">HeaderName -&gt; Lens' Options [ByteString]
 </span><span class="hs-identifier hs-var">header</span></span><span> </span><span class="annot"><span class="annottext">HeaderName
-</span><span class="hs-string">&quot;User-Agent&quot;</span></span><span> </span><span class="annot"><span class="annottext">forall s t a b. ASetter s t a b -&gt; b -&gt; s -&gt; t
+</span><span class="hs-string">&quot;User-Agent&quot;</span></span><span> </span><span class="annot"><span class="annottext">(([ByteString] -&gt; Identity [ByteString])
+ -&gt; Options -&gt; Identity Options)
+-&gt; [ByteString] -&gt; Options -&gt; Options
+forall s t a b. ASetter s t a b -&gt; b -&gt; s -&gt; t
 </span><span class="hs-operator hs-var">.~</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">ByteString
 </span><a href="GoPro.Plus.Internal.HTTP.html#userAgent"><span class="hs-identifier hs-var">userAgent</span></a></span><span class="hs-special">]</span><span>
-</span><span id="line-20"></span><span>          </span><span class="annot"><span class="annottext">forall a b. a -&gt; (a -&gt; b) -&gt; b
+</span><span id="line-20"></span><span>          </span><span class="annot"><span class="annottext">Options -&gt; (Options -&gt; Options) -&gt; Options
+forall a b. a -&gt; (a -&gt; b) -&gt; b
 </span><span class="hs-operator hs-var">&amp;</span></span><span> </span><span class="annot"><span class="annottext">HeaderName -&gt; Lens' Options [ByteString]
 </span><span class="hs-identifier hs-var">header</span></span><span> </span><span class="annot"><span class="annottext">HeaderName
-</span><span class="hs-string">&quot;Referer&quot;</span></span><span> </span><span class="annot"><span class="annottext">forall s t a b. ASetter s t a b -&gt; b -&gt; s -&gt; t
+</span><span class="hs-string">&quot;Referer&quot;</span></span><span> </span><span class="annot"><span class="annottext">(([ByteString] -&gt; Identity [ByteString])
+ -&gt; Options -&gt; Identity Options)
+-&gt; [ByteString] -&gt; Options -&gt; Options
+forall s t a b. ASetter s t a b -&gt; b -&gt; s -&gt; t
 </span><span class="hs-operator hs-var">.~</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">ByteString
 </span><span class="hs-string">&quot;https://plus.gopro.com/&quot;</span></span><span class="hs-special">]</span><span>
-</span><span id="line-21"></span><span>          </span><span class="annot"><span class="annottext">forall a b. a -&gt; (a -&gt; b) -&gt; b
+</span><span id="line-21"></span><span>          </span><span class="annot"><span class="annottext">Options -&gt; (Options -&gt; Options) -&gt; Options
+forall a b. a -&gt; (a -&gt; b) -&gt; b
 </span><span class="hs-operator hs-var">&amp;</span></span><span> </span><span class="annot"><span class="annottext">HeaderName -&gt; Lens' Options [ByteString]
 </span><span class="hs-identifier hs-var">header</span></span><span> </span><span class="annot"><span class="annottext">HeaderName
-</span><span class="hs-string">&quot;Origin&quot;</span></span><span> </span><span class="annot"><span class="annottext">forall s t a b. ASetter s t a b -&gt; b -&gt; s -&gt; t
+</span><span class="hs-string">&quot;Origin&quot;</span></span><span> </span><span class="annot"><span class="annottext">(([ByteString] -&gt; Identity [ByteString])
+ -&gt; Options -&gt; Identity Options)
+-&gt; [ByteString] -&gt; Options -&gt; Options
+forall s t a b. ASetter s t a b -&gt; b -&gt; s -&gt; t
 </span><span class="hs-operator hs-var">.~</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">ByteString
 </span><span class="hs-string">&quot;https://plus.gopro.com&quot;</span></span><span class="hs-special">]</span><span>
-</span><span id="line-22"></span><span>          </span><span class="annot"><span class="annottext">forall a b. a -&gt; (a -&gt; b) -&gt; b
+</span><span id="line-22"></span><span>          </span><span class="annot"><span class="annottext">Options -&gt; (Options -&gt; Options) -&gt; Options
+forall a b. a -&gt; (a -&gt; b) -&gt; b
 </span><span class="hs-operator hs-var">&amp;</span></span><span> </span><span class="annot"><span class="annottext">HeaderName -&gt; Lens' Options [ByteString]
 </span><span class="hs-identifier hs-var">header</span></span><span> </span><span class="annot"><span class="annottext">HeaderName
-</span><span class="hs-string">&quot;Accept-Language&quot;</span></span><span> </span><span class="annot"><span class="annottext">forall s t a b. ASetter s t a b -&gt; b -&gt; s -&gt; t
+</span><span class="hs-string">&quot;Accept-Language&quot;</span></span><span> </span><span class="annot"><span class="annottext">(([ByteString] -&gt; Identity [ByteString])
+ -&gt; Options -&gt; Identity Options)
+-&gt; [ByteString] -&gt; Options -&gt; Options
+forall s t a b. ASetter s t a b -&gt; b -&gt; s -&gt; t
 </span><span class="hs-operator hs-var">.~</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">ByteString
 </span><span class="hs-string">&quot;en-US,en;q=0.9&quot;</span></span><span class="hs-special">]</span><span>
 </span><span id="line-23"></span><span>
 </span><span id="line-24"></span><span class="annot"><a href="GoPro.Plus.Internal.HTTP.html#authOpts"><span class="hs-identifier hs-type">authOpts</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Network.Wreq.Options</span></span><span>
 </span><span id="line-25"></span><span id="authOpts"><span class="annot"><span class="annottext">authOpts :: Text -&gt; Options
-</span><a href="GoPro.Plus.Internal.HTTP.html#authOpts"><span class="hs-identifier hs-var hs-var">authOpts</span></a></span></span><span> </span><span id="local-6989586621679354358"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621679354358"><span class="hs-identifier hs-var">tok</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options
-</span><a href="GoPro.Plus.Internal.HTTP.html#defOpts"><span class="hs-identifier hs-var">defOpts</span></a></span><span> </span><span class="annot"><span class="annottext">forall a b. a -&gt; (a -&gt; b) -&gt; b
+</span><a href="GoPro.Plus.Internal.HTTP.html#authOpts"><span class="hs-identifier hs-var hs-var">authOpts</span></a></span></span><span> </span><span id="local-6989586621679353870"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679353870"><span class="hs-identifier hs-var">tok</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options
+</span><a href="GoPro.Plus.Internal.HTTP.html#defOpts"><span class="hs-identifier hs-var">defOpts</span></a></span><span> </span><span class="annot"><span class="annottext">Options -&gt; (Options -&gt; Options) -&gt; Options
+forall a b. a -&gt; (a -&gt; b) -&gt; b
 </span><span class="hs-operator hs-var">&amp;</span></span><span> </span><span class="annot"><span class="annottext">HeaderName -&gt; Lens' Options [ByteString]
 </span><span class="hs-identifier hs-var">header</span></span><span> </span><span class="annot"><span class="annottext">HeaderName
-</span><span class="hs-string">&quot;Authorization&quot;</span></span><span> </span><span class="annot"><span class="annottext">forall s t a b. ASetter s t a b -&gt; b -&gt; s -&gt; t
+</span><span class="hs-string">&quot;Authorization&quot;</span></span><span> </span><span class="annot"><span class="annottext">(([ByteString] -&gt; Identity [ByteString])
+ -&gt; Options -&gt; Identity Options)
+-&gt; [ByteString] -&gt; Options -&gt; Options
+forall s t a b. ASetter s t a b -&gt; b -&gt; s -&gt; t
 </span><span class="hs-operator hs-var">.~</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">ByteString
-</span><span class="hs-string">&quot;Bearer &quot;</span></span><span> </span><span class="annot"><span class="annottext">forall a. Semigroup a =&gt; a -&gt; a -&gt; a
+</span><span class="hs-string">&quot;Bearer &quot;</span></span><span> </span><span class="annot"><span class="annottext">ByteString -&gt; ByteString -&gt; ByteString
+forall a. Semigroup a =&gt; a -&gt; a -&gt; a
 </span><span class="hs-operator hs-var">&lt;&gt;</span></span><span> </span><span class="annot"><span class="annottext">Text -&gt; ByteString
 </span><span class="hs-identifier hs-var">TE.encodeUtf8</span></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621679354358"><span class="hs-identifier hs-var">tok</span></a></span><span class="hs-special">]</span><span>
-</span><span id="line-26"></span><span>               </span><span class="annot"><span class="annottext">forall a b. a -&gt; (a -&gt; b) -&gt; b
+</span><a href="#local-6989586621679353870"><span class="hs-identifier hs-var">tok</span></a></span><span class="hs-special">]</span><span>
+</span><span id="line-26"></span><span>               </span><span class="annot"><span class="annottext">Options -&gt; (Options -&gt; Options) -&gt; Options
+forall a b. a -&gt; (a -&gt; b) -&gt; b
 </span><span class="hs-operator hs-var">&amp;</span></span><span> </span><span class="annot"><span class="annottext">HeaderName -&gt; Lens' Options [ByteString]
 </span><span class="hs-identifier hs-var">header</span></span><span> </span><span class="annot"><span class="annottext">HeaderName
-</span><span class="hs-string">&quot;Accept&quot;</span></span><span> </span><span class="annot"><span class="annottext">forall s t a b. ASetter s t a b -&gt; b -&gt; s -&gt; t
+</span><span class="hs-string">&quot;Accept&quot;</span></span><span> </span><span class="annot"><span class="annottext">(([ByteString] -&gt; Identity [ByteString])
+ -&gt; Options -&gt; Identity Options)
+-&gt; [ByteString] -&gt; Options -&gt; Options
+forall s t a b. ASetter s t a b -&gt; b -&gt; s -&gt; t
 </span><span class="hs-operator hs-var">.~</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">ByteString
 </span><span class="hs-string">&quot;application/vnd.gopro.jk.media+json; version=2.0.0&quot;</span></span><span class="hs-special">]</span><span>
-</span><span id="line-27"></span><span>               </span><span class="annot"><span class="annottext">forall a b. a -&gt; (a -&gt; b) -&gt; b
+</span><span id="line-27"></span><span>               </span><span class="annot"><span class="annottext">Options -&gt; (Options -&gt; Options) -&gt; Options
+forall a b. a -&gt; (a -&gt; b) -&gt; b
 </span><span class="hs-operator hs-var">&amp;</span></span><span> </span><span class="annot"><span class="annottext">HeaderName -&gt; Lens' Options [ByteString]
 </span><span class="hs-identifier hs-var">header</span></span><span> </span><span class="annot"><span class="annottext">HeaderName
-</span><span class="hs-string">&quot;Content-Type&quot;</span></span><span> </span><span class="annot"><span class="annottext">forall s t a b. ASetter s t a b -&gt; b -&gt; s -&gt; t
+</span><span class="hs-string">&quot;Content-Type&quot;</span></span><span> </span><span class="annot"><span class="annottext">(([ByteString] -&gt; Identity [ByteString])
+ -&gt; Options -&gt; Identity Options)
+-&gt; [ByteString] -&gt; Options -&gt; Options
+forall s t a b. ASetter s t a b -&gt; b -&gt; s -&gt; t
 </span><span class="hs-operator hs-var">.~</span></span><span> </span><span class="hs-special">[</span><span class="annot"><span class="annottext">ByteString
 </span><span class="hs-string">&quot;application/json&quot;</span></span><span class="hs-special">]</span><span>
 </span><span id="line-28"></span><span>
@@ -76,86 +105,122 @@
 </span><a href="GoPro.Plus.Internal.HTTP.html#jsonOpts"><span class="hs-identifier hs-var hs-var">jsonOpts</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options
 </span><span class="hs-identifier hs-var">defaultOptions</span></span><span> </span><span class="hs-special">{</span><span>
 </span><span id="line-31"></span><span>  </span><span class="annot"><span class="annottext">fieldLabelModifier :: String -&gt; String
-</span><span class="hs-identifier hs-var">fieldLabelModifier</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">forall a. (a -&gt; Bool) -&gt; [a] -&gt; [a]
-</span><span class="hs-identifier hs-var">dropWhile</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">forall a. Eq a =&gt; a -&gt; a -&gt; Bool
+</span><span class="hs-identifier hs-var">fieldLabelModifier</span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">(Char -&gt; Bool) -&gt; String -&gt; String
+forall a. (a -&gt; Bool) -&gt; [a] -&gt; [a]
+</span><span class="hs-identifier hs-var">dropWhile</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Char -&gt; Char -&gt; Bool
+forall a. Eq a =&gt; a -&gt; a -&gt; Bool
 </span><span class="hs-operator hs-var">==</span></span><span> </span><span class="annot"><span class="annottext">Char
 </span><span class="hs-char">'_'</span></span><span class="hs-special">)</span><span>
 </span><span id="line-32"></span><span>  </span><span class="hs-special">}</span><span>
 </span><span id="line-33"></span><span>
-</span><span id="line-34"></span><span class="hs-comment">-- | Proxy a request to GoPro with authentication.</span><span>
-</span><span id="line-35"></span><span id="local-6989586621679354452"><span class="annot"><a href="GoPro.Plus.Internal.HTTP.html#proxy"><span class="hs-identifier hs-type">proxy</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">MonadIO</span></span><span> </span><span class="annot"><a href="#local-6989586621679354452"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679354452"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">BL.ByteString</span></span></span><span>
+</span><span id="line-34"></span><span class="annot"><span class="hs-comment">-- | Proxy a request to GoPro with authentication.</span></span><span>
+</span><span id="line-35"></span><span id="local-6989586621679353776"><span class="annot"><a href="GoPro.Plus.Internal.HTTP.html#proxy"><span class="hs-identifier hs-type">proxy</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="annot"><span class="hs-identifier hs-type">MonadIO</span></span><span> </span><span class="annot"><a href="#local-6989586621679353776"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679353776"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="annot"><span class="hs-identifier hs-type">BL.ByteString</span></span></span><span>
 </span><span id="line-36"></span><span id="proxy"><span class="annot"><span class="annottext">proxy :: forall (m :: * -&gt; *). MonadIO m =&gt; Text -&gt; String -&gt; m ByteString
-</span><a href="GoPro.Plus.Internal.HTTP.html#proxy"><span class="hs-identifier hs-var hs-var">proxy</span></a></span></span><span> </span><span id="local-6989586621679354343"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621679354343"><span class="hs-identifier hs-var">tok</span></a></span></span><span> </span><span id="local-6989586621679354342"><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679354342"><span class="hs-identifier hs-var">u</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
-</span><span id="line-37"></span><span>  </span><span id="local-6989586621679354341"><span class="annot"><span class="annottext">Response ByteString
-</span><a href="#local-6989586621679354341"><span class="hs-identifier hs-var">r</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">forall (m :: * -&gt; *) a. MonadIO m =&gt; IO a -&gt; m a
-</span><span class="hs-identifier hs-var">liftIO</span></span><span> </span><span class="annot"><span class="annottext">forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="GoPro.Plus.Internal.HTTP.html#proxy"><span class="hs-identifier hs-var hs-var">proxy</span></a></span></span><span> </span><span id="local-6989586621679353885"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679353885"><span class="hs-identifier hs-var">tok</span></a></span></span><span> </span><span id="local-6989586621679353886"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679353886"><span class="hs-identifier hs-var">u</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-keyword">do</span><span>
+</span><span id="line-37"></span><span>  </span><span id="local-6989586621679353887"><span class="annot"><span class="annottext">Response ByteString
+</span><a href="#local-6989586621679353887"><span class="hs-identifier hs-var">r</span></a></span></span><span> </span><span class="hs-glyph">&lt;-</span><span> </span><span class="annot"><span class="annottext">IO (Response ByteString) -&gt; m (Response ByteString)
+forall a. IO a -&gt; m a
+forall (m :: * -&gt; *) a. MonadIO m =&gt; IO a -&gt; m a
+</span><span class="hs-identifier hs-var">liftIO</span></span><span> </span><span class="annot"><span class="annottext">(IO (Response ByteString) -&gt; m (Response ByteString))
+-&gt; IO (Response ByteString) -&gt; m (Response ByteString)
+forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Options -&gt; String -&gt; IO (Response ByteString)
 </span><span class="hs-identifier hs-var">getWith</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Options
 </span><a href="GoPro.Plus.Internal.HTTP.html#authOpts"><span class="hs-identifier hs-var">authOpts</span></a></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621679354343"><span class="hs-identifier hs-var">tok</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679354342"><span class="hs-identifier hs-var">u</span></a></span><span>
-</span><span id="line-38"></span><span>  </span><span class="annot"><span class="annottext">forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
-</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">forall a b. (a -&gt; b) -&gt; a -&gt; b
+</span><a href="#local-6989586621679353885"><span class="hs-identifier hs-var">tok</span></a></span><span class="hs-special">)</span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679353886"><span class="hs-identifier hs-var">u</span></a></span><span>
+</span><span id="line-38"></span><span>  </span><span class="annot"><span class="annottext">ByteString -&gt; m ByteString
+forall a. a -&gt; m a
+forall (f :: * -&gt; *) a. Applicative f =&gt; a -&gt; f a
+</span><span class="hs-identifier hs-var">pure</span></span><span> </span><span class="annot"><span class="annottext">(ByteString -&gt; m ByteString) -&gt; ByteString -&gt; m ByteString
+forall a b. (a -&gt; b) -&gt; a -&gt; b
 </span><span class="hs-operator hs-var">$</span></span><span> </span><span class="annot"><span class="annottext">Response ByteString
-</span><a href="#local-6989586621679354341"><span class="hs-identifier hs-var">r</span></a></span><span> </span><span class="annot"><span class="annottext">forall s a. s -&gt; Getting a s a -&gt; a
-</span><span class="hs-operator hs-var">^.</span></span><span> </span><span class="annot"><span class="annottext">forall body0 body1.
-Lens (Response body0) (Response body1) body0 body1
+</span><a href="#local-6989586621679353887"><span class="hs-identifier hs-var">r</span></a></span><span> </span><span class="annot"><span class="annottext">Response ByteString
+-&gt; Getting ByteString (Response ByteString) ByteString
+-&gt; ByteString
+forall s a. s -&gt; Getting a s a -&gt; a
+</span><span class="hs-operator hs-var">^.</span></span><span> </span><span class="annot"><span class="annottext">Getting ByteString (Response ByteString) ByteString
+forall body0 body1 (f :: * -&gt; *).
+Functor f =&gt;
+(body0 -&gt; f body1) -&gt; Response body0 -&gt; f (Response body1)
 </span><span class="hs-identifier hs-var">responseBody</span></span><span>
 </span><span id="line-39"></span><span>
-</span><span id="line-40"></span><span id="local-6989586621679354430"><span id="local-6989586621679354431"><span class="annot"><a href="GoPro.Plus.Internal.HTTP.html#jget"><span class="hs-identifier hs-type">jget</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">MonadIO</span></span><span> </span><span class="annot"><a href="#local-6989586621679354431"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="#local-6989586621679354430"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679354431"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679354430"><span class="hs-identifier hs-type">a</span></a></span></span></span><span>
+</span><span id="line-40"></span><span id="local-6989586621679353797"><span id="local-6989586621679353798"><span class="annot"><a href="GoPro.Plus.Internal.HTTP.html#jget"><span class="hs-identifier hs-type">jget</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">MonadIO</span></span><span> </span><span class="annot"><a href="#local-6989586621679353797"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="#local-6989586621679353798"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Text</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679353797"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679353798"><span class="hs-identifier hs-type">a</span></a></span></span></span><span>
 </span><span id="line-41"></span><span id="jget"><span class="annot"><span class="annottext">jget :: forall (m :: * -&gt; *) a.
 (MonadIO m, FromJSON a) =&gt;
 Text -&gt; String -&gt; m a
-</span><a href="GoPro.Plus.Internal.HTTP.html#jget"><span class="hs-identifier hs-var hs-var">jget</span></a></span></span><span> </span><span id="local-6989586621679354333"><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621679354333"><span class="hs-identifier hs-var">tok</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">forall (m :: * -&gt; *) a.
+</span><a href="GoPro.Plus.Internal.HTTP.html#jget"><span class="hs-identifier hs-var hs-var">jget</span></a></span></span><span> </span><span id="local-6989586621679353895"><span class="annot"><span class="annottext">Text
+</span><a href="#local-6989586621679353895"><span class="hs-identifier hs-var">tok</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Options -&gt; String -&gt; m a
+forall (m :: * -&gt; *) a.
 (MonadIO m, FromJSON a) =&gt;
 Options -&gt; String -&gt; m a
 </span><a href="GoPro.Plus.Internal.HTTP.html#jgetWith"><span class="hs-identifier hs-var">jgetWith</span></a></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Text -&gt; Options
 </span><a href="GoPro.Plus.Internal.HTTP.html#authOpts"><span class="hs-identifier hs-var">authOpts</span></a></span><span> </span><span class="annot"><span class="annottext">Text
-</span><a href="#local-6989586621679354333"><span class="hs-identifier hs-var">tok</span></a></span><span class="hs-special">)</span><span>
+</span><a href="#local-6989586621679353895"><span class="hs-identifier hs-var">tok</span></a></span><span class="hs-special">)</span><span>
 </span><span id="line-42"></span><span>
-</span><span id="line-43"></span><span id="local-6989586621679354425"><span id="local-6989586621679354426"><span class="annot"><a href="GoPro.Plus.Internal.HTTP.html#jgetWith"><span class="hs-identifier hs-type">jgetWith</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">MonadIO</span></span><span> </span><span class="annot"><a href="#local-6989586621679354426"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="#local-6989586621679354425"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Network.Wreq.Options</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679354426"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679354425"><span class="hs-identifier hs-type">a</span></a></span></span></span><span>
+</span><span id="line-43"></span><span id="local-6989586621679353802"><span id="local-6989586621679353803"><span class="annot"><a href="GoPro.Plus.Internal.HTTP.html#jgetWith"><span class="hs-identifier hs-type">jgetWith</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">MonadIO</span></span><span> </span><span class="annot"><a href="#local-6989586621679353802"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="#local-6989586621679353803"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Network.Wreq.Options</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679353802"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679353803"><span class="hs-identifier hs-type">a</span></a></span></span></span><span>
 </span><span id="line-44"></span><span id="jgetWith"><span class="annot"><span class="annottext">jgetWith :: forall (m :: * -&gt; *) a.
 (MonadIO m, FromJSON a) =&gt;
 Options -&gt; String -&gt; m a
-</span><a href="GoPro.Plus.Internal.HTTP.html#jgetWith"><span class="hs-identifier hs-var hs-var">jgetWith</span></a></span></span><span> </span><span id="local-6989586621679354315"><span class="annot"><span class="annottext">Options
-</span><a href="#local-6989586621679354315"><span class="hs-identifier hs-var">opts</span></a></span></span><span> </span><span id="local-6989586621679354314"><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679354314"><span class="hs-identifier hs-var">u</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">forall s (m :: * -&gt; *) a. MonadReader s m =&gt; Getting a s a -&gt; m a
-</span><span class="hs-identifier hs-var">view</span></span><span> </span><span class="annot"><span class="annottext">forall body0 body1.
-Lens (Response body0) (Response body1) body0 body1
-</span><span class="hs-identifier hs-var">responseBody</span></span><span> </span><span class="annot"><span class="annottext">forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
-</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">forall (m :: * -&gt; *) a. MonadIO m =&gt; IO a -&gt; m a
+</span><a href="GoPro.Plus.Internal.HTTP.html#jgetWith"><span class="hs-identifier hs-var hs-var">jgetWith</span></a></span></span><span> </span><span id="local-6989586621679353913"><span class="annot"><span class="annottext">Options
+</span><a href="#local-6989586621679353913"><span class="hs-identifier hs-var">opts</span></a></span></span><span> </span><span id="local-6989586621679353914"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679353914"><span class="hs-identifier hs-var">u</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Getting a (Response a) a -&gt; Response a -&gt; a
+forall s (m :: * -&gt; *) a. MonadReader s m =&gt; Getting a s a -&gt; m a
+</span><span class="hs-identifier hs-var">view</span></span><span> </span><span class="annot"><span class="annottext">Getting a (Response a) a
+forall body0 body1 (f :: * -&gt; *).
+Functor f =&gt;
+(body0 -&gt; f body1) -&gt; Response body0 -&gt; f (Response body1)
+</span><span class="hs-identifier hs-var">responseBody</span></span><span> </span><span class="annot"><span class="annottext">(Response a -&gt; a) -&gt; m (Response a) -&gt; m a
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">IO (Response a) -&gt; m (Response a)
+forall a. IO a -&gt; m a
+forall (m :: * -&gt; *) a. MonadIO m =&gt; IO a -&gt; m a
 </span><span class="hs-identifier hs-var">liftIO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Options -&gt; String -&gt; IO (Response ByteString)
 </span><span class="hs-identifier hs-var">getWith</span></span><span> </span><span class="annot"><span class="annottext">Options
-</span><a href="#local-6989586621679354315"><span class="hs-identifier hs-var">opts</span></a></span><span> </span><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679354314"><span class="hs-identifier hs-var">u</span></a></span><span> </span><span class="annot"><span class="annottext">forall (m :: * -&gt; *) a b. Monad m =&gt; m a -&gt; (a -&gt; m b) -&gt; m b
-</span><span class="hs-operator hs-var">&gt;&gt;=</span></span><span> </span><span class="annot"><span class="annottext">forall (m :: * -&gt; *) a.
+</span><a href="#local-6989586621679353913"><span class="hs-identifier hs-var">opts</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679353914"><span class="hs-identifier hs-var">u</span></a></span><span> </span><span class="annot"><span class="annottext">IO (Response ByteString)
+-&gt; (Response ByteString -&gt; IO (Response a)) -&gt; IO (Response a)
+forall a b. IO a -&gt; (a -&gt; IO b) -&gt; IO b
+forall (m :: * -&gt; *) a b. Monad m =&gt; m a -&gt; (a -&gt; m b) -&gt; m b
+</span><span class="hs-operator hs-var">&gt;&gt;=</span></span><span> </span><span class="annot"><span class="annottext">Response ByteString -&gt; IO (Response a)
+forall (m :: * -&gt; *) a.
 (MonadThrow m, FromJSON a) =&gt;
 Response ByteString -&gt; m (Response a)
 </span><span class="hs-identifier hs-var">asJSON</span></span><span class="hs-special">)</span><span>
 </span><span id="line-45"></span><span>
-</span><span id="line-46"></span><span id="local-6989586621679354406"><span id="local-6989586621679354408"><span id="local-6989586621679354409"><span class="annot"><a href="GoPro.Plus.Internal.HTTP.html#jpostWith"><span class="hs-identifier hs-type">jpostWith</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">MonadIO</span></span><span> </span><span class="annot"><a href="#local-6989586621679354409"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Postable</span></span><span> </span><span class="annot"><a href="#local-6989586621679354408"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="#local-6989586621679354406"><span class="hs-identifier hs-type">r</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Network.Wreq.Options</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679354408"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679354409"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679354406"><span class="hs-identifier hs-type">r</span></a></span></span></span></span><span>
+</span><span id="line-46"></span><span id="local-6989586621679353819"><span id="local-6989586621679353820"><span id="local-6989586621679353822"><span class="annot"><a href="GoPro.Plus.Internal.HTTP.html#jpostWith"><span class="hs-identifier hs-type">jpostWith</span></a></span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-special">(</span><span class="annot"><span class="hs-identifier hs-type">MonadIO</span></span><span> </span><span class="annot"><a href="#local-6989586621679353819"><span class="hs-identifier hs-type">m</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Postable</span></span><span> </span><span class="annot"><a href="#local-6989586621679353820"><span class="hs-identifier hs-type">a</span></a></span><span class="hs-special">,</span><span> </span><span class="annot"><span class="hs-identifier hs-type">FromJSON</span></span><span> </span><span class="annot"><a href="#local-6989586621679353822"><span class="hs-identifier hs-type">r</span></a></span><span class="hs-special">)</span><span> </span><span class="hs-glyph">=&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">Network.Wreq.Options</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><span class="hs-identifier hs-type">String</span></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679353820"><span class="hs-identifier hs-type">a</span></a></span><span> </span><span class="hs-glyph">-&gt;</span><span> </span><span class="annot"><a href="#local-6989586621679353819"><span class="hs-identifier hs-type">m</span></a></span><span> </span><span class="annot"><a href="#local-6989586621679353822"><span class="hs-identifier hs-type">r</span></a></span></span></span></span><span>
 </span><span id="line-47"></span><span id="jpostWith"><span class="annot"><span class="annottext">jpostWith :: forall (m :: * -&gt; *) a r.
 (MonadIO m, Postable a, FromJSON r) =&gt;
 Options -&gt; String -&gt; a -&gt; m r
-</span><a href="GoPro.Plus.Internal.HTTP.html#jpostWith"><span class="hs-identifier hs-var hs-var">jpostWith</span></a></span></span><span> </span><span id="local-6989586621679354296"><span class="annot"><span class="annottext">Options
-</span><a href="#local-6989586621679354296"><span class="hs-identifier hs-var">opts</span></a></span></span><span> </span><span id="local-6989586621679354295"><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679354295"><span class="hs-identifier hs-var">u</span></a></span></span><span> </span><span id="local-6989586621679354294"><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621679354294"><span class="hs-identifier hs-var">v</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">forall s (m :: * -&gt; *) a. MonadReader s m =&gt; Getting a s a -&gt; m a
-</span><span class="hs-identifier hs-var">view</span></span><span> </span><span class="annot"><span class="annottext">forall body0 body1.
-Lens (Response body0) (Response body1) body0 body1
-</span><span class="hs-identifier hs-var">responseBody</span></span><span> </span><span class="annot"><span class="annottext">forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
-</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">forall (m :: * -&gt; *) a. MonadIO m =&gt; IO a -&gt; m a
-</span><span class="hs-identifier hs-var">liftIO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">forall a.
+</span><a href="GoPro.Plus.Internal.HTTP.html#jpostWith"><span class="hs-identifier hs-var hs-var">jpostWith</span></a></span></span><span> </span><span id="local-6989586621679353932"><span class="annot"><span class="annottext">Options
+</span><a href="#local-6989586621679353932"><span class="hs-identifier hs-var">opts</span></a></span></span><span> </span><span id="local-6989586621679353933"><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679353933"><span class="hs-identifier hs-var">u</span></a></span></span><span> </span><span id="local-6989586621679353934"><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679353934"><span class="hs-identifier hs-var">v</span></a></span></span><span> </span><span class="hs-glyph">=</span><span> </span><span class="annot"><span class="annottext">Getting r (Response r) r -&gt; Response r -&gt; r
+forall s (m :: * -&gt; *) a. MonadReader s m =&gt; Getting a s a -&gt; m a
+</span><span class="hs-identifier hs-var">view</span></span><span> </span><span class="annot"><span class="annottext">Getting r (Response r) r
+forall body0 body1 (f :: * -&gt; *).
+Functor f =&gt;
+(body0 -&gt; f body1) -&gt; Response body0 -&gt; f (Response body1)
+</span><span class="hs-identifier hs-var">responseBody</span></span><span> </span><span class="annot"><span class="annottext">(Response r -&gt; r) -&gt; m (Response r) -&gt; m r
+forall (f :: * -&gt; *) a b. Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+</span><span class="hs-operator hs-var">&lt;$&gt;</span></span><span> </span><span class="annot"><span class="annottext">IO (Response r) -&gt; m (Response r)
+forall a. IO a -&gt; m a
+forall (m :: * -&gt; *) a. MonadIO m =&gt; IO a -&gt; m a
+</span><span class="hs-identifier hs-var">liftIO</span></span><span> </span><span class="hs-special">(</span><span class="annot"><span class="annottext">Options -&gt; String -&gt; a -&gt; IO (Response ByteString)
+forall a.
 Postable a =&gt;
 Options -&gt; String -&gt; a -&gt; IO (Response ByteString)
 </span><span class="hs-identifier hs-var">postWith</span></span><span> </span><span class="annot"><span class="annottext">Options
-</span><a href="#local-6989586621679354296"><span class="hs-identifier hs-var">opts</span></a></span><span> </span><span class="annot"><span class="annottext">String
-</span><a href="#local-6989586621679354295"><span class="hs-identifier hs-var">u</span></a></span><span> </span><span class="annot"><span class="annottext">a
-</span><a href="#local-6989586621679354294"><span class="hs-identifier hs-var">v</span></a></span><span> </span><span class="annot"><span class="annottext">forall (m :: * -&gt; *) a b. Monad m =&gt; m a -&gt; (a -&gt; m b) -&gt; m b
-</span><span class="hs-operator hs-var">&gt;&gt;=</span></span><span> </span><span class="annot"><span class="annottext">forall (m :: * -&gt; *) a.
+</span><a href="#local-6989586621679353932"><span class="hs-identifier hs-var">opts</span></a></span><span> </span><span class="annot"><span class="annottext">String
+</span><a href="#local-6989586621679353933"><span class="hs-identifier hs-var">u</span></a></span><span> </span><span class="annot"><span class="annottext">a
+</span><a href="#local-6989586621679353934"><span class="hs-identifier hs-var">v</span></a></span><span> </span><span class="annot"><span class="annottext">IO (Response ByteString)
+-&gt; (Response ByteString -&gt; IO (Response r)) -&gt; IO (Response r)
+forall a b. IO a -&gt; (a -&gt; IO b) -&gt; IO b
+forall (m :: * -&gt; *) a b. Monad m =&gt; m a -&gt; (a -&gt; m b) -&gt; m b
+</span><span class="hs-operator hs-var">&gt;&gt;=</span></span><span> </span><span class="annot"><span class="annottext">Response ByteString -&gt; IO (Response r)
+forall (m :: * -&gt; *) a.
 (MonadThrow m, FromJSON a) =&gt;
 Response ByteString -&gt; m (Response a)
 </span><span class="hs-identifier hs-var">asJSON</span></span><span class="hs-special">)</span><span>

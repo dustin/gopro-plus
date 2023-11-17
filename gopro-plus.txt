@@ -7,7 +7,7 @@
 --   Please see the README on GitHub at
 --   <a>https://github.com/dustin/gopro-plus#readme</a>
 @package gopro-plus
-@version 0.6.6.4
+@version 0.6.6.6
 
 
 -- | GoPro Plus authentication.
@@ -132,6 +132,7 @@ Continuous :: MediumType
 ExternalVideo :: MediumType
 Session :: MediumType
 MultiClipEdit :: MediumType
+Audio :: MediumType
 data ReadyToViewType
 ViewReady :: ReadyToViewType
 ViewFailure :: ReadyToViewType
