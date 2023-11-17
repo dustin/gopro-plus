@@ -106,6 +106,8 @@ data MediumType = Photo -- ^ a still photo
     | ExternalVideo
     | Session
     | MultiClipEdit
+    | Audio
+
     deriving (Bounded, Enum, Show, Read, Eq)
 
 instance ToJSON MediumType where
