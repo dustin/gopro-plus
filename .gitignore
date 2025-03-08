@@ -3,3 +3,5 @@
 .direnv
 .stack-work/
 /stack.yaml.lock
+client.js
+TAGS
