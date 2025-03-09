@@ -3,6 +3,7 @@ with pkgs;
 mkShell {
   buildInputs = [
     stack
+    hpack
     sqlite-interactive
     ffmpeg
     stylish-haskell
