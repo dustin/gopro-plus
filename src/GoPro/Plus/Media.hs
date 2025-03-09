@@ -126,6 +126,7 @@ data ReadyToViewType = ViewReady
     | ViewUploading
     | ViewPreTranscoding
     | ViewUpdating
+    | ViewLive
     deriving (Bounded, Enum, Show, Read, Generic, Eq)
 
 instance ToJSON ReadyToViewType where
