@@ -7,7 +7,7 @@
 --   Please see the README on GitHub at
 --   <a>https://github.com/dustin/gopro-plus#readme</a>
 @package gopro-plus
-@version 0.6.6.6
+@version 0.6.6.7
 
 
 -- | GoPro Plus authentication.
@@ -143,6 +143,7 @@ ViewProcessing :: ReadyToViewType
 ViewUploading :: ReadyToViewType
 ViewPreTranscoding :: ReadyToViewType
 ViewUpdating :: ReadyToViewType
+ViewLive :: ReadyToViewType
 data Medium
 Medium :: MediumID -> Maybe String -> UTCTime -> UTCTime -> Maybe Int -> Int -> ReadyToViewType -> Maybe String -> MediumType -> String -> Maybe Int -> Maybe Int -> Maybe String -> Medium
 [_medium_id] :: Medium -> MediumID
